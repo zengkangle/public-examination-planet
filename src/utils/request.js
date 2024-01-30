@@ -2,7 +2,7 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 const request = axios.create({
-	baseURL: 'http://localhost:8008',  // 全局统一加上了 后端接口前缀 ，后端必须进行跨域配置！
+	baseURL: 'http://localhost:8009',  // 全局统一加上了 后端接口前缀 ，后端必须进行跨域配置！
 	timeout: 5000
 })
 

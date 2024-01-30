@@ -1,30 +1,70 @@
 <script setup lang="ts">
-import {ref,onMounted} from "vue";
+import {ref, onMounted, toRef, onBeforeMount, onBeforeUnmount, onUnmounted} from "vue";
 import type { UploadProps, UploadUserFile } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 import TalkCard from "@/components/TalkCard.vue";
+import {storeToRefs} from "pinia"
+import {useUserStore} from "@/store/user"
+import request from "@/utils/request.js"
+import {ElMessage, ElNotification} from "element-plus";
 
-let text = ref()
+/**
+ * 获取用户id信息
+ */
+const userStore = useUserStore()
+const {userId} = storeToRefs(userStore)
+
+/**
+ * 发布微博
+ */
+let fileList = ref([])
+let postWeibo = ref({
+  userId:null,
+  text:'',
+  imageUploadList:[],
+})
+
 function post(){
-
+  postWeibo.value.userId = userId.value
+  if (fileList.value.length!=0){
+    for (let valueElement of fileList.value) {
+      postWeibo.value.imageUploadList.push(valueElement.response.data)
+    }
+  }
+  request.post(
+    "/weibo/postWeibo",
+    postWeibo.value
+  ).then(res => {
+    if (res.code === '200') {
+      ElNotification({
+        message: '发布成功！',
+        type: 'success',
+        offset: 50,
+        duration: 1200,
+      })
+      pageMsg.value.currentPage = 0
+      fileList.value = []
+      postWeibo.value.imageUploadList = []
+      postWeibo.value.text = ''
+      weiboList.value = []
+      getWeiboListScroll()
+    } else{
+      ElMessage({
+        message: res.msg,
+        type: "error",
+        showClose: true,
+      })
+    }
+  })
 }
 
-
-const fileList = ref<UploadUserFile[]>([
-  {
-    name: 'food.jpeg',
-    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100',
-  },
-
-])
+/**
+ * 照片列表上传
+ */
 const dialogImageUrl = ref('')
 const dialogVisible = ref(false)
-
-const handleRemove: UploadProps['onRemove'] = (uploadFile, uploadFiles) => {
-  console.log(uploadFile, uploadFiles)
-}
 
 const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
   dialogImageUrl.value = uploadFile.url!
@@ -35,9 +75,14 @@ function doUpload(){
   document.getElementById('uploadId').click()
 }
 
+/**
+ * 表情
+ */
 let emoji = ref()
 let emojiIcon = ref()
 let emojiTitle = ref()
+let emojiSwitch = ref(false)
+
 onMounted(() => {
   document.addEventListener("click",function (event){
     if (event.target !== emoji.value && event.target !== emojiIcon.value && event.target !== emojiTitle.value){
@@ -45,22 +90,52 @@ onMounted(() => {
     }
   })
 })
-
-let emojiSwitch = ref(false)
-
+let postInput = ref()
 function onSelectEmoji(emoji) {
-  console.log(emoji)
-  let input = document.getElementById('post-input-id')
-  console.log(input)
+  let input:HTMLInputElement = postInput.value.textarea
   let startPos = input.selectionStart
   let endPos = input.selectionEnd
   let resultText = input.value.substring(0, startPos) + emoji.i + input.value.substring(endPos)
   input.value = resultText
   input.focus()
-  input.selectionStart = startPos + emoji.n.length
-  input.selectionEnd = startPos + emoji.n.length
-
+  input.selectionStart = startPos + emoji.i.length
+  input.selectionEnd = startPos + emoji.i.length
+  postWeibo.value.text = resultText
 }
+
+/**
+ * 分页+无限滚动
+ */
+const pageMsg = ref({
+  currentPage:1,
+  pageSize:5,
+ })
+const weiboList = ref([])
+const load = () => {
+  getWeiboListScroll()
+ }
+function getWeiboListScroll(){
+  request.get(
+    "/weibo/showWeiboList",
+    {
+      params:pageMsg.value
+    }
+  ).then(res => {
+    if (res.code === '200'){
+      weiboList.value = weiboList.value.concat(res.data.records)
+      pageMsg.value.currentPage++
+      console.log(weiboList.value)
+    }else {
+      ElMessage({
+        message:'微博获取失败',
+        type:"error",
+      })
+    }
+  })
+}
+onBeforeMount(() => {
+  // getWeiboListFirstTime()
+})
 
 </script>
 
@@ -69,22 +144,21 @@ function onSelectEmoji(emoji) {
 			<div class="post-box">
           <div class="post-header">
               <el-input
-                      v-model="text"
+                      v-model="postWeibo.text"
                       maxlength="304"
                       placeholder="有什么公考心得分享给大家？"
                       show-word-limit
                       type="textarea"
                       class="post-input"
-                      id="post-input-id"
+                      ref="postInput"
                       input-style="background-color: #F0F1F4; border-radius: 10px;"
                       :autosize="{minRows: 3, maxRows: 6 }"
               />
             <el-upload
               v-model:file-list="fileList"
-              action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+              action="http://localhost:8009/files/imageUpload"
               list-type="picture-card"
               :on-preview="handlePictureCardPreview"
-              :on-remove="handleRemove"
               class="upload"
               v-show="fileList.length!=0"
             >
@@ -125,9 +199,8 @@ function onSelectEmoji(emoji) {
               <el-button class="post-button" @click="post" type="primary" round>发布</el-button>
           </div>
       </div>
-      <div class="talk-list">
-        <talk-card/>
-        <talk-card/>
+      <div class="talk-list" v-infinite-scroll="load">
+        <talk-card v-for="weibo in weiboList"  :weibo="weibo"/>
       </div>
 	</div>
 </template>

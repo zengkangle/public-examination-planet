@@ -51,14 +51,20 @@ declare module 'vue' {
     LiveCard: typeof import('./src/components/LiveCard.vue')['default']
     ManageCourseSideBar: typeof import('./src/components/ManageCourseSideBar.vue')['default']
     MyCourseCard: typeof import('./src/components/MyCourseCard.vue')['default']
+    ReplyCard: typeof import('./src/components/ReplyCard.vue')['default']
+    ReplyDialog: typeof import('./src/components/ReplyDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SideBarForTeacher: typeof import('./src/components/SideBarForTeacher.vue')['default']
     StudentRate: typeof import('./src/components/StudentRate.vue')['default']
+    SubReply: typeof import('./src/components/SubReply.vue')['default']
     TalkCard: typeof import('./src/components/TalkCard.vue')['default']
     TeacherCard: typeof import('./src/components/TeacherCard.vue')['default']
     TeacherIntroduceCard: typeof import('./src/components/TeacherIntroduceCard.vue')['default']
     TheWelcome: typeof import('./src/components/TheWelcome.vue')['default']
     WelcomeItem: typeof import('./src/components/WelcomeItem.vue')['default']
+  }
+  export interface ComponentCustomProperties {
+    vInfiniteScroll: typeof import('element-plus/es')['ElInfiniteScroll']
   }
 }

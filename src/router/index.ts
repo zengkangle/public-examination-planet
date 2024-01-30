@@ -22,6 +22,7 @@ import BuyCourseDetail from "@/views/course/BuyCourseDetail.vue";
 import PlayCourseVideo from "@/views/PlayCourseVideo.vue";
 import TeacherDetail from "@/views/TeacherDetail.vue";
 import LiveRoom from "@/views/LiveRoom.vue";
+import Knowledge from "@/views/Knowledge.vue";
 
 
 const router = createRouter({
@@ -118,6 +119,10 @@ const router = createRouter({
         {
           path: 'liveRoom',
           component: LiveRoom
+        },
+        {
+          path: 'knowledge',
+          component: Knowledge
         },
       ]
     },

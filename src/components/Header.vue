@@ -1,16 +1,24 @@
 <script setup lang="ts">
 import {onBeforeRouteUpdate, useRouter} from "vue-router";
 import {onBeforeMount, ref} from "vue";
+import {useUserStore} from '@/store/user'
+import {storeToRefs} from "pinia"
+import useGetUserToStore from "@/hooks/useGetUserToStore";
 import {
 	ArrowDown,
-	Plus,
 } from '@element-plus/icons-vue'
+import {ElNotification} from "element-plus";
+
+
+const userStore = useUserStore()
+const {userId, userAvatarUrl, userName} = storeToRefs(userStore)
+const {getUserMsg} = useGetUserToStore()
 
 const router = useRouter()
 let initSpace = ref()
 function findInit(getStr?) {
 	let str
-	getStr ? str = getStr : str = router.currentRoute._rawValue.fullPath.split('/')[2]
+	getStr ? str = getStr : str = router.currentRoute.value.fullPath.split('/')[2]
 	switch (str) {
 		case 'home':
 			initSpace.value = 'init1'
@@ -31,8 +39,10 @@ function findInit(getStr?) {
 }
 
 onBeforeMount(() => {
-	findInit()
+	  findInit()
+    getUserMsg()
 })
+
 onBeforeRouteUpdate((to) => {
 	findInit(to.fullPath.split('/')[2])
 })
@@ -41,14 +51,27 @@ function toManageCourse(){
     router.push('/base/manageOfTeacher')
 }
 
+function logout(){
+    sessionStorage.removeItem("user");
+    getUserMsg()
+    ElNotification({
+        message: '退出成功',
+        type: 'success',
+        offset: 50,
+        duration:1200,
+    })
+}
 
+function toHome(){
+    router.push('/')
+}
 
 </script>
 
 <template>
     <div class="header-warp">
         <div class="header">
-            <div>
+            <div class="logo-img" @click="toHome">
                 <img src="../assets/star-logo.png" alt="" height="55px"/>
                 <img src="../assets/title.png" alt="" height="35px" class="title">
             </div>
@@ -73,26 +96,26 @@ function toManageCourse(){
                 </ul>
             </div>
             <div class="avatar">
-                <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+                <el-avatar :src="userAvatarUrl"
                            :size="45"></el-avatar>
             </div>
             <div class="login">
-                <div v-if=false>
+                <div v-if="!userId">
                     <div class="welcome">
                         亲爱的公考人，欢迎
                         <router-link to="/starter/login">登录</router-link>
                     </div>
                 </div>
-                <div v-if=true>
+                <div v-if="userId">
                     <el-dropdown class="el-drop">
-                        <span class="el-dropdown-link">HealMe<el-icon class="el-icon--right"><arrow-down /></el-icon></span>
+                        <span class="el-dropdown-link">{{userName}}<el-icon class="el-icon--right"><arrow-down /></el-icon></span>
                         <template #dropdown>
                             <el-dropdown-menu>
                                 <el-dropdown-item>Action 1</el-dropdown-item>
                                 <el-dropdown-item @click="toManageCourse">课程管理</el-dropdown-item>
                                 <el-dropdown-item>Action 3</el-dropdown-item>
                                 <el-dropdown-item disabled>Action 4</el-dropdown-item>
-                                <el-dropdown-item divided>Action 5</el-dropdown-item>
+                                <el-dropdown-item divided @click="logout">退出登录</el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
                     </el-dropdown>
@@ -120,7 +143,9 @@ function toManageCourse(){
     margin: 0 auto;
     display: flex;
 }
-
+.logo-img{
+    cursor: pointer;
+}
 .title {
     position: relative;
     top: -7px;
@@ -132,7 +157,6 @@ function toManageCourse(){
     background-color: #ffff;
     border-radius: 4px;
     position: absolute;
-//left: 50px; bottom: 1px; transition: all ease, 0.4s;
 }
 
 .init1 {

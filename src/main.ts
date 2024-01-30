@@ -5,6 +5,9 @@ import App from './App.vue'
 // 引入路由器
 import router from './router'
 
+//引入pinia
+import {createPinia} from 'pinia'
+
 //引入uploader
 import uploader from 'vue-simple-uploader'
 import 'vue-simple-uploader/dist/style.css'
@@ -22,6 +25,10 @@ import "element-plus/theme-chalk/el-drawer.css";
 
 // 创建一个应用
 const app = createApp(App)
+//创建pinia
+const pinia = createPinia()
+//使用pinia
+app.use(pinia)
 // 使用路由器
 app.use(router)
 //使用上传器

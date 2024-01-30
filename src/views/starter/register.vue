@@ -1,47 +1,59 @@
 <script setup lang="ts">
 import {ref} from "vue";
-import {ElNotification} from "element-plus";
+import {ElNotification, ElMessage} from "element-plus";
 import request from "@/utils/request.js"
+import {useRouter} from "vue-router";
 
-const registerUser = ref({username:'',phone:'',password:'',checkPass:''})
+const registerUser = ref({userName:'',userPhone:'',userPassword:'',checkPass:''})
 let rules = ref({
     checkPass: [
         {required: true, message: "请再次输入密码", trigger: "blur"},
     ],
-    username: [
+    userName: [
         {required: true, message: "请输入昵称", trigger: "blur"}
     ],
-    password: [
+    userPassword: [
         {required: true, message: "请输入密码", trigger: "blur"}
     ],
-    phone: [
+    userPhone: [
         {required: true, message: "请输入手机号", trigger: "blur"}
     ],
 })
+
+
+let router = useRouter()
 function submitForm(){
-    if (registerUser.value.username === "" || registerUser.value.checkPass === "" || registerUser.value.password === "" || registerUser.value.phone === "") {
-        console.log('err')
-        ElNotification({
+    if (registerUser.value.userName === "" || registerUser.value.checkPass === "" || registerUser.value.userPassword === "" || registerUser.value.userPhone === "") {
+        ElMessage({
+            showClose: true,
             message: '您还有选项未输入，请检查！',
             type: 'error'
         });
     } else {
         request.post(
           "/user/register",
-          this.registerUser
+          registerUser.value
         ).then(res => {
             if (res.code === '200') {
-                this.$message.success("注册成功")
-                this.$router.push("/Canyon_Gaming_Starter/login")
+                ElNotification({
+                    message: res.data,
+                    type: 'success'
+                })
+                router.push("/starter/login")
             } else
-                this.$message.error(res.msg)
+                ElMessage({
+                    showClose: true,
+                    message: res.msg,
+                    type: 'error'
+                })
         }).catch();
     }}
 function resetForm(){
-    registerUser.value.username = ""
+    registerUser.value.userName = ""
     registerUser.value.checkPass = ""
-    registerUser.value.password = ""
-    registerUser.value.phone = ""}
+    registerUser.value.userPassword = ""
+    registerUser.value.userPhone = ""
+}
 </script>
 
 <template>
@@ -52,18 +64,18 @@ function resetForm(){
       :rules="rules"
       ref="ruleForm"
       label-width="100px"
-      class="demo-ruleForm"
+      class="rule-form"
     >
-        <el-form-item label="昵称" prop="username" for="username">
-            <el-input id="username" v-model="registerUser.username" clearable></el-input>
+        <el-form-item label="昵称" prop="userName" for="userName">
+            <el-input id="username" v-model="registerUser.userName" clearable></el-input>
         </el-form-item>
-        <el-form-item label="手机号" prop="phone" for="phone">
-            <el-input id="phone" v-model="registerUser.phone" clearable></el-input>
+        <el-form-item label="手机号" prop="userPhone" for="userPhone">
+            <el-input id="phone" v-model="registerUser.userPhone" clearable></el-input>
         </el-form-item>
-        <el-form-item label="密码" prop="password">
+        <el-form-item label="密码" prop="userPassword">
             <el-input
               type="password"
-              v-model="registerUser.password"
+              v-model="registerUser.userPassword"
               autocomplete="off"
               clearable
             ></el-input>
@@ -92,7 +104,7 @@ function resetForm(){
 .text2{
     font-size: 17px;
 }
-.demo-ruleForm{
+.rule-form{
     width: 90%;
     position: relative;
     left: -20px;

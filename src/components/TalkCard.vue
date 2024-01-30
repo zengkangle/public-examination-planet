@@ -1,10 +1,68 @@
 <script setup lang="ts">
 import '//at.alicdn.com/t/c/font_3294066_5m9urj9rq4a.js'
-import {ref, onMounted} from "vue";
+import {ref, onMounted, onBeforeMount, watch, computed} from "vue";
 import EmojiPicker from "vue3-emoji-picker";
 import CommentCard from "@/components/CommentCard.vue";
-let text = ref()
+import request from "@/utils/request.js"
+import * as dayjs from 'dayjs'
+import {ElMessage, ElNotification} from "element-plus";
+import {useUserStore} from "@/store/user"
+import {storeToRefs} from "pinia";
+import emitter from "@/utils/emitter";
 
+
+const {weibo} = defineProps(['weibo'])
+
+const userStore = useUserStore()
+const {userId, userAvatarUrl, userName} = storeToRefs(userStore)
+
+
+onBeforeMount(() => {
+    getImageList()
+    getUserMsg()
+})
+
+const userMsg = ref(0)
+function getUserMsg(){
+    request.get(
+        '/user/getUserMsg',
+      {
+        params: {userId:weibo.userId,}
+      }
+    ).then(res => {
+        if (res.code === '200'){
+            userMsg.value = res.data
+        }else {
+            ElMessage({
+                message:'微博用户信息获取失败',
+                type:"error",
+            })
+        }
+    })
+}
+const imageList = ref([])
+function getImageList(){
+    request.get(
+      '/weibo/selectImageList',
+      {
+          params: {weiboId:weibo.weiboId,}
+      }
+    ).then(res => {
+        if (res.code === '200'){
+            imageList.value = res.data
+        }else {
+            ElMessage({
+                message:'微博用户信息获取失败',
+                type:"error",
+            })
+        }
+    })
+}
+
+
+/**
+ * 表情
+ */
 let emoji = ref()
 let emojiIcon = ref()
 let emojiTitle = ref()
@@ -17,90 +75,111 @@ onMounted(() => {
 })
 
 let emojiSwitch = ref(false)
-
+let commentInput = ref()
 function onSelectEmoji(emoji) {
-    console.log(emoji)
-    let input = document.getElementById('comment-input-id')
-    console.log(input)
+    let input:HTMLInputElement = commentInput.value.textarea
     let startPos = input.selectionStart
     let endPos = input.selectionEnd
     let resultText = input.value.substring(0, startPos) + emoji.i + input.value.substring(endPos)
     input.value = resultText
     input.focus()
-    input.selectionStart = startPos + emoji.n.length
-    input.selectionEnd = startPos + emoji.n.length
+    input.selectionStart = startPos + emoji.i.length
+    input.selectionEnd = startPos + emoji.i.length
+    commentMsg.value.weiboCommentContent = resultText;
 }
 
+/**
+ * 发布评论
+ */
+const commentMsg = ref({
+    userId:userId.value,
+    weiboId:weibo.weiboId,
+    weiboCommentContent:'',
+})
+
+
+function postComment(){
+    request.post(
+        '/weibo/postComment',
+        commentMsg.value
+    ).then(res =>{
+        if (res.code === '200'){
+        commentMsg.value.weiboCommentContent = ''
+            ElNotification({
+                message:'评论成功',
+                type: 'success',
+                offset: 50,
+                duration: 1200,
+            })
+            getCommentList()
+            weibo.weiboCommentAmount++
+        }else {
+            ElMessage({
+                message:'评论失败',
+                type:"error",
+            })
+        }
+    })
+}
+
+/**
+ * 获取评论列表
+ */
 let showCommentBox = ref(false)
+const commentList = ref([])
+function getCommentList(){
+    request.get(
+        '/weibo/showWeiboCommentList',
+      {
+        params:{weiboId:weibo.weiboId}
+        }
+    ).then(res => {
+        if (res.code === '200'){
+            commentList.value = res.data
+        }
+    })
+}
+watch(showCommentBox,(newValue) => {
+    if (newValue){
+        getCommentList()
+    }
+})
+
+emitter.on('update-comment-list',() => {
+    getCommentList()
+    weibo.weiboCommentAmount++
+})
+
+// computed()
 </script>
 
 <template>
     <div class="card-box">
         <div class="card-header">
-            <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" :size="55"/>
+            <el-avatar :src="userMsg.userAvatarUrl" :size="55"/>
             <div class="card-header-info">
                 <div class="user">
-                    <div class="name">雷军</div>
+                    <div class="name">{{ userMsg.userName }}</div>
                     <svg class="icon vip-icon" aria-hidden="true">
-                        <use xlink:href="#icon-vip"></use>
+                        <use xlink:href="#icon-vip" v-show="userMsg.userLevel==='vip'"></use>
                     </svg>
                 </div>
-                <div class="post-time">2024.01.22 13:30</div>
+                <div class="post-time">{{ dayjs(weibo.weiboPostTime).format('YYYY.MM.DD HH:mm')}}</div>
             </div>
         </div>
         <div class="card-content">
-            <div class="card-content-text">
-                “人只有在感觉到安稳和偏爱时，性格才会越来越好，情绪稳定，不由自主的开心和自信。无论心情多糟糕，一定要记得和爱的人好好说话。”
-            </div>
+            <div class="card-content-text">{{weibo.weiboContent}}</div>
             <div class="image-list">
                 <el-image
                   style="width: 130px; height: 130px; border-radius: 8px; margin-right: 6px;"
-                  src="https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg"
+                  v-for="(img ,index) in imageList"
+                  :key="index"
+                  :src="img"
                   :zoom-rate="1.2"
                   :max-scale="7"
                   :min-scale="0.2"
-                  :preview-src-list="['https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg']"
-                  :initial-index="4"
-                  fit="cover"
-                />
-                <el-image
-                  style="width: 130px; height: 130px; border-radius: 8px; margin-right: 6px;"
-                  src="https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg"
-                  :zoom-rate="1.2"
-                  :max-scale="7"
-                  :min-scale="0.2"
-                  :preview-src-list="['https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg']"
-                  :initial-index="4"
-                  fit="cover"
-                />
-                <el-image
-                  style="width: 130px; height: 130px; border-radius: 8px; margin-right: 6px;"
-                  src="https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg"
-                  :zoom-rate="1.2"
-                  :max-scale="7"
-                  :min-scale="0.2"
-                  :preview-src-list="['https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg']"
-                  :initial-index="4"
-                  fit="cover"
-                />
-                <el-image
-                  style="width: 130px; height: 130px; border-radius: 8px; margin-right: 4px;"
-                  src="https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg"
-                  :zoom-rate="1.2"
-                  :max-scale="7"
-                  :min-scale="0.2"
-                  :preview-src-list="['https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg']"
-                  :initial-index="4"
-                  fit="cover"
-                />
-                <el-image
-                  style="width: 130px; height: 130px; border-radius: 8px; margin-right: 4px;"
-                  src="https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg"
-                  :zoom-rate="1.2"
-                  :max-scale="7"
-                  :min-scale="0.2"
-                  :preview-src-list="['https://fuss10.elemecdn.com/a/3f/3302e58f9a181d2509f3dc0fa68b0jpeg.jpeg']"
-                  :initial-index="4"
+                  :preview-src-list="imageList"
+                  :initial-index="imageList.indexOf(img)"
                   fit="cover"
                 />
             </div>
@@ -108,21 +187,21 @@ let showCommentBox = ref(false)
         <div class="card-footer">
             <div class="comment-button" @click="showCommentBox = !showCommentBox">
                 <i class="iconfont comment-icon">&#xe646;</i>
-                <div class="comment-button-title">评论</div>
+                <div class="comment-button-title">{{weibo.weiboCommentAmount}}</div>
             </div>
         </div>
         <div class="comment-box" v-if="showCommentBox">
             <div class="divider"></div>
             <div class="comment-box-header">
-                <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" :size="40"/>
+                <el-avatar :src="userAvatarUrl!" :size="40"/>
                 <div class="comment-box-header-send">
                     <el-input
-                      v-model="text"
+                      v-model="commentMsg.weiboCommentContent"
                       maxlength="304"
                       placeholder="发布你的评论"
                       type="textarea"
                       class="comment-input"
-                      id="comment-input-id"
+                      ref="commentInput"
                       input-style="background-color: #F0F1F4; border-radius: 10px;"
                       :autosize="{minRows: 1, maxRows: 6 }"
                     />
@@ -150,15 +229,15 @@ let showCommentBox = ref(false)
                                            'symbols',
                                            'flags']"
                         />
-                        <el-button type="primary" class="send-comment" round>评论</el-button>
+                        <el-button type="primary" class="send-comment" round @click="postComment">评论</el-button>
                     </div>
                 </div>
             </div>
             <div class="divider2"></div>
             <div class="comment-box-container">
-                <comment-card/>
-                <comment-card/>
-                <comment-card/>
+                <el-scrollbar  max-height="300px" style="width: 620px">
+                    <comment-card v-for="comment in commentList" :key="comment.weiboCommentId" :comment="comment"/>
+                </el-scrollbar>
             </div>
         </div>
     </div>

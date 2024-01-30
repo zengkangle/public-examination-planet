@@ -22,6 +22,7 @@ let imgList = ref([{id:'1',url:'https://nodestatic.fbstatic.cn/pan/downloads/b7c
     </div>
     <el-divider></el-divider>
     <div class="knowledge-area">
+
       <KnowledgeNavgation class="knowledge-nav"/>
       <KnowledgeNavgation class="knowledge-nav"/>
       <KnowledgeNavgation class="knowledge-nav"/>

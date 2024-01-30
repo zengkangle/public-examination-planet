@@ -49,17 +49,16 @@ onMounted(() => {
 })
 
 let emojiSwitch = ref(false)
-
+let liveInput = ref()
 function onSelectEmoji(emoji) {
-	console.log(emoji)
-    let input = document.getElementById("live-input")
+    let input:HTMLInputElement = liveInput.value.textarea
     let startPos = input.selectionStart
     let endPos = input.selectionEnd
     let resultText = input.value.substring(0, startPos) + emoji.i + input.value.substring(endPos)
     input.value = resultText
     input.focus()
-    input.selectionStart = startPos + emoji.n.length
-    input.selectionEnd = startPos + emoji.n.length
+    input.selectionStart = startPos + emoji.i.length
+    input.selectionEnd = startPos + emoji.i.length
 
 }
 
@@ -135,7 +134,7 @@ function onSelectEmoji(emoji) {
                         placeholder="这里输入聊天内容"
                         show-word-limit
                         type="textarea"
-                        id="live-input"
+                        ref="liveInput"
                 />
                 <el-button type="primary" class="send-button" @click="send">发送</el-button>
             </div>

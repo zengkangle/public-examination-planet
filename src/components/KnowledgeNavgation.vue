@@ -12,13 +12,13 @@
 			<div class="line"></div>
 			<div class="show-area">
         <img src="https://hera.fbstatic.cn/439669142663168.jpg" alt="" class="img"/>
-        <routerLink to="/" class="show-text">如何在言语二选一中锁定正确答案</routerLink>
+        <routerLink to="/base/knowledge" class="show-text">如何在言语二选一中锁定正确答案</routerLink>
       </div>
-      <router-link to="/" class="subtitle">资料分析速算技巧</router-link>
-      <router-link to="/" class="subtitle">常识判断秒杀技巧</router-link>
-      <router-link to="/" class="subtitle">2023年省联考时事政治热点汇总！</router-link>
-      <router-link to="/" class="subtitle">悄悄告诉你一个蒙题技巧</router-link>
-      <router-link to="/" class="subtitle">逻辑判断中”材料题“-组合排列问题如何解？</router-link>
+      <router-link to="/base/knowledge" class="subtitle">资料分析速算技巧</router-link>
+      <router-link to="/base/knowledge" class="subtitle">常识判断秒杀技巧</router-link>
+      <router-link to="/base/knowledge" class="subtitle">2023年省联考时事政治热点汇总！</router-link>
+      <router-link to="/base/knowledge" class="subtitle">悄悄告诉你一个蒙题技巧</router-link>
+      <router-link to="/base/knowledge" class="subtitle">逻辑判断中”材料题“-组合排列问题如何解？</router-link>
 	</div>
 </template>
 
