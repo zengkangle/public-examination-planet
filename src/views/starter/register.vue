@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {ref} from "vue";
 import {ElNotification, ElMessage} from "element-plus";
-import request from "@/utils/request.js"
+import request from "@/utils/request"
 import {useRouter} from "vue-router";
 
 const registerUser = ref({userName:'',userPhone:'',userPassword:'',checkPass:''})

@@ -96,7 +96,7 @@ function toHome(){
                 </ul>
             </div>
             <div class="avatar">
-                <el-avatar :src="userAvatarUrl"
+                <el-avatar :src="userAvatarUrl ? userAvatarUrl:'http://localhost:8009/files/imageDownload/21dfe35569fc47c38f9d283a15c2ffcb.png'"
                            :size="45"></el-avatar>
             </div>
             <div class="login">
@@ -157,6 +157,8 @@ function toHome(){
     background-color: #ffff;
     border-radius: 4px;
     position: absolute;
+    bottom: 1px;
+    transition: all ease, 0.4s;
 }
 
 .init1 {

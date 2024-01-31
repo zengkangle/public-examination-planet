@@ -2,7 +2,7 @@
 import {ref} from "vue";
 import {ElNotification, ElMessage} from "element-plus";
 import {useUserStore} from "@/store/user"
-import request from "@/utils/request.js"
+import request from "@/utils/request"
 import useGetUserToStore from "@/hooks/useGetUserToStore";
 import {
 	User,

@@ -7,8 +7,8 @@ import 'vue3-emoji-picker/css'
 import TalkCard from "@/components/TalkCard.vue";
 import {storeToRefs} from "pinia"
 import {useUserStore} from "@/store/user"
-import request from "@/utils/request.js"
 import {ElMessage, ElNotification} from "element-plus";
+import request from "@/utils/request";
 
 /**
  * 获取用户id信息

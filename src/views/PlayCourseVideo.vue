@@ -4,7 +4,7 @@ import {ref} from "vue";
 import {Notebook, User} from "@element-plus/icons-vue";
 
 const options = {
-	resource: "https://media.w3.org/2010/05/sintel/trailer.mp4",
+	resource: "http://localhost:8009/files/playVideo/a886263d5e6242ee9bfa0106ec4af47b.mp4",
 	theme: "#40AEED",
 	danmaku:{
 		open: true,

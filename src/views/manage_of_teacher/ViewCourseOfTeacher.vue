@@ -42,7 +42,6 @@ const form = ref({
 })
 
 
-const uploaderRef = ref(null)
 const options = {
 	target: 'http://localhost:8009/files/videoUpload',
 	testChunks: false
@@ -51,24 +50,16 @@ const attrs = {
 	accept: 'image/*'
 }
 const statusText = {
-	success: 'success',
-	error: 'error',
-	uploading: 'uploading',
-	paused: 'paused',
+	success: '上传成功！',
+	error: '上传失败，请重试！',
+	uploading: '努力上传中，请等待！',
+	paused: '暂停中',
 	waiting: 'waiting'
 }
-const complete = () => {
-	console.log('complete', arguments)
+function onFileSuccess(rootFile, file, response, chunk) {
+    let res = JSON.parse(response);
+    console.log(res)
 }
-const fileComplete = () => {
-	console.log('file complete', arguments)
-}
-onMounted(() => {
-	nextTick(() => {
-		window.uploader = uploaderRef.value.uploader
-	})
-})
-
 function showEditDialog() {
 	dialogFormVisible.value = true
 }
@@ -140,9 +131,7 @@ function showUploadDialog() {
                       :options="options"
                       :file-status-text="statusText"
                       class="uploader-example"
-                      ref="uploaderRef"
-                      @file-complete="fileComplete"
-                      @complete="complete"
+                      @file-success="onFileSuccess"
                     >
                         <uploader-unsupport></uploader-unsupport>
                         <uploader-drop class="uploader-drop">

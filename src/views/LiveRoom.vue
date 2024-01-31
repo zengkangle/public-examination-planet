@@ -6,6 +6,15 @@ import {ref, nextTick, onMounted} from "vue";
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
 
+const ws = new WebSocket('ws://localhost:8009/chat')
+ws.onopen = function (){
+    console.log('链接成功！')
+}
+ws.onmessage = function (MessageEvent){
+    console.log(MessageEvent)
+    console.log(JSON.parse(MessageEvent.data))
+}
+
 const options = {
 	resource: "http://192.168.159.132:8080/live/liveroom_94916.flv",
 	type: "custom",
@@ -27,13 +36,18 @@ const scrollbarRef = ref() // 滚动条实例
  * 控制滚动条滚动到容器的底部
  */
 async function setScrollToBottom() {
-	// 注意：需要通过 nextTick 以等待 DOM 更新完成
+	// nextTick 以等待 DOM 更新完成
 	await nextTick()
 	const max = 31 * count.value
 	scrollbarRef.value.setScrollTop(max)
 }
 
+
+const liveChatMsg =ref({
+    content:'前端发了消息哇！'
+})
 async function send() {
+    ws.send(JSON.stringify(liveChatMsg.value))
 	count.value++
 	await setScrollToBottom()
 }
