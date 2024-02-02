@@ -56,7 +56,7 @@ const statusText = {
 	paused: '暂停中',
 	waiting: 'waiting'
 }
-function onFileSuccess(rootFile, file, response, chunk) {
+function onFileSuccess(rootFile, file, response) {
     let res = JSON.parse(response);
     console.log(res)
 }
@@ -87,15 +87,16 @@ function showUploadDialog() {
                 </template>
             </el-table-column>
         </el-table>
-        <el-pagination
-                :background="true"
-                layout="prev, pager, next, jumper"
-                v-model:current-page="pageMsg.currentPage"
-                v-model:page-size="pageMsg.pageSize"
-                :total="pageMsg.total"
-                class="page"
-        >
-        </el-pagination>
+        <div class="page">
+            <el-pagination
+              :background="true"
+              layout="prev, pager, next, jumper"
+              v-model:current-page="pageMsg.currentPage"
+              v-model:page-size="pageMsg.pageSize"
+              :total="pageMsg.total"
+            >
+            </el-pagination>
+        </div>
         <el-dialog v-model="dialogFormVisible" title="编辑">
             <el-form :model="form">
                 <el-form-item label="Promotion name" label-width="140px">
@@ -158,21 +159,14 @@ function showUploadDialog() {
 </template>
 
 <style scoped>
-.content {
-    width: 100%;
-}
 
 .title {
     font-size: 28px;
-    position: relative;
-    top: 16px;
 }
 
 .page {
-    position: relative;
-    left: 400px;
-    text-align: center;
-    margin-top: 30px;
+    width: 500px;
+    margin: 10px auto 0;
 }
 
 .uploader-example {

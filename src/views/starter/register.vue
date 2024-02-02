@@ -4,10 +4,19 @@ import {ElNotification, ElMessage} from "element-plus";
 import request from "@/utils/request"
 import {useRouter} from "vue-router";
 
-const registerUser = ref({userName:'',userPhone:'',userPassword:'',checkPass:''})
+const registerUser = ref({userName:'',userPhone:'',userPassword:'',checkPassword:''})
+const validateCheckPassword = (rule, value, callback) => {
+    if (value === '') {
+        callback(new Error('请再次输入密码'));
+    } else if (value !== registerUser.value.userPassword) {
+        callback(new Error('两次输入密码不一致!'));
+    } else {
+        callback();
+    }
+}
 let rules = ref({
-    checkPass: [
-        {required: true, message: "请再次输入密码", trigger: "blur"},
+    checkPassword: [
+        {validator: validateCheckPassword,required: true, trigger: "blur"},
     ],
     userName: [
         {required: true, message: "请输入昵称", trigger: "blur"}
@@ -23,7 +32,7 @@ let rules = ref({
 
 let router = useRouter()
 function submitForm(){
-    if (registerUser.value.userName === "" || registerUser.value.checkPass === "" || registerUser.value.userPassword === "" || registerUser.value.userPhone === "") {
+    if (registerUser.value.userName === "" || registerUser.value.checkPassword === "" || registerUser.value.userPassword === "" || registerUser.value.userPhone === "") {
         ElMessage({
             showClose: true,
             message: '您还有选项未输入，请检查！',
@@ -50,7 +59,7 @@ function submitForm(){
     }}
 function resetForm(){
     registerUser.value.userName = ""
-    registerUser.value.checkPass = ""
+    registerUser.value.checkPassword = ""
     registerUser.value.userPassword = ""
     registerUser.value.userPhone = ""
 }
@@ -80,10 +89,10 @@ function resetForm(){
               clearable
             ></el-input>
         </el-form-item>
-        <el-form-item label="确认密码" prop="checkPass" for="checkPass">
+        <el-form-item label="确认密码" prop="checkPassword" for="checkPassword">
             <el-input
               type="password"
-              v-model="registerUser.checkPass"
+              v-model="registerUser.checkPassword"
               autocomplete="off"
               clearable
             ></el-input>

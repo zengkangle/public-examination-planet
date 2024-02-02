@@ -47,7 +47,6 @@ onBeforeMount(() => {
 	}
 })
 emitter.on('update-recent-reply-user-name',() => {
-	console.log("!!!!!!",comment)
 	if (comment.weiboCommentReplyAmount != 0){
 		getRecentReplyUserName()
 	}

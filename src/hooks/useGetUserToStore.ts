@@ -7,11 +7,12 @@ export default function (){
 			userStore.$patch({
 				userId: sessionUser.userId,
 				userName: sessionUser.userName,
+				userGender: sessionUser.userGender,
 				userPhone: sessionUser.userPhone,
 				userAvatarUrl: sessionUser.userAvatarUrl,
 				userEmail: sessionUser.userEmail,
 				userLevel: sessionUser.userLevel,
-				userFreeWatch: sessionUser.userFreeWatch,
+				userCreateTime: sessionUser.userCreateTime,
 				token: sessionUser.token,
 			})
 

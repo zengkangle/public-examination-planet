@@ -6,12 +6,13 @@ export const useUserStore = defineStore('user',{
 		return {
 			userId:null,
 			userName:null,
+			userGender:null,
 			userPhone:null,
 			userAvatarUrl:null,
 			userEmail:null,
 			userLevel:null,
 			teacherId:null,
-			userFreeWatch:null,
+			userCreateTime:null,
 			token:null,
 		}
 	}

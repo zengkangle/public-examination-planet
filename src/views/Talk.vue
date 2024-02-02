@@ -125,17 +125,9 @@ function getWeiboListScroll(){
       weiboList.value = weiboList.value.concat(res.data.records)
       pageMsg.value.currentPage++
       console.log(weiboList.value)
-    }else {
-      ElMessage({
-        message:'微博获取失败',
-        type:"error",
-      })
     }
   })
 }
-onBeforeMount(() => {
-  // getWeiboListFirstTime()
-})
 
 </script>
 

@@ -16,13 +16,23 @@ import InterviewOfBuy from "@/views/course/buy_course/InterviewOfBuy.vue";
 import WrittenTestOfMine from "@/views/course/my_course/WrittenTestOfMine.vue";
 import InterviewOfMine from "@/views/course/my_course/InterviewOfMine.vue";
 import PublicInstitutionOfMine from "@/views/course/my_course/PublicInstitutionOfMine.vue";
-import ManageOfTeacher from "@/views/ManageOfTeacher.vue";
-import ViewCourseOfTeacher from "@/views/manage_of_teacher/ViewCourseOfTeacher.vue";
+import Manage from "@/views/Manage.vue";
 import BuyCourseDetail from "@/views/course/BuyCourseDetail.vue";
 import PlayCourseVideo from "@/views/PlayCourseVideo.vue";
 import TeacherDetail from "@/views/TeacherDetail.vue";
 import LiveRoom from "@/views/LiveRoom.vue";
 import Knowledge from "@/views/Knowledge.vue";
+import AddArticleOfAdminManage from "@/views/manage/AddArticleOfAdminManage.vue";
+import CheckOfAdminManage from "@/views/manage/CheckOfAdminManage.vue";
+import CourseOfAdminManage from "@/views/manage/CourseOfAdminManage.vue";
+import CreateCourseOfManage from "@/views/manage/CreateCourseOfManage.vue";
+import MyLiveOfManage from "@/views/manage/MyLiveOfManage.vue";
+import SearchCheckOfManage from "@/views/manage/SearchCheckOfManage.vue";
+import TeacherOfAdminManage from "@/views/manage/TeacherOfAdminManage.vue";
+import UserInformationOfManage from "@/views/manage/UserInformationOfManage.vue";
+import UserOfAdminManage from "@/views/manage/UserOfAdminManage.vue";
+import MyCourseOfManage from "@/views/manage/MyCourseOfManage.vue";
+import MyOrderOfManage from "@/views/manage/MyOrderOfManage.vue";
 
 
 const router = createRouter({
@@ -99,12 +109,52 @@ const router = createRouter({
           component: Teacher,
         },
         {
-          path: 'manageOfTeacher',
-          component: ManageOfTeacher,
+          path: 'manage',
+          component: Manage,
           children:[
             {
-              path: 'viewCourseOfTeacher',
-              component: ViewCourseOfTeacher,
+              path: 'addArticleOfAdminManage',
+              component: AddArticleOfAdminManage,
+            },
+            {
+              path: 'checkOfAdminManage',
+              component: CheckOfAdminManage,
+            },
+            {
+              path: 'courseOfAdminManage',
+              component: CourseOfAdminManage,
+            },
+            {
+              path: 'createCourseOfManage',
+              component: CreateCourseOfManage,
+            },
+            {
+              path: 'myCourseOfManage',
+              component: MyCourseOfManage,
+            },
+            {
+              path: 'myLiveOfManage',
+              component: MyLiveOfManage,
+            },
+            {
+              path: 'myOrderOfManage',
+              component: MyOrderOfManage,
+            },
+            {
+              path: 'searchCheckOfManage',
+              component: SearchCheckOfManage,
+            },
+            {
+              path: 'teacherOfAdminManage',
+              component: TeacherOfAdminManage,
+            },
+            {
+              path: 'userInformationOfManage',
+              component: UserInformationOfManage,
+            },
+            {
+              path: 'userOfAdminManage',
+              component: UserOfAdminManage,
             },
           ],
         },

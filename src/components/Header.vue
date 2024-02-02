@@ -5,13 +5,13 @@ import {useUserStore} from '@/store/user'
 import {storeToRefs} from "pinia"
 import useGetUserToStore from "@/hooks/useGetUserToStore";
 import {
-	ArrowDown,
+    ArrowDown, DocumentAdd, Search, Setting, ShoppingCart, Smoking, User, VideoCamera, VideoPlay, View,
 } from '@element-plus/icons-vue'
 import {ElNotification} from "element-plus";
 
 
 const userStore = useUserStore()
-const {userId, userAvatarUrl, userName} = storeToRefs(userStore)
+const {userId, userAvatarUrl, userName,userLevel} = storeToRefs(userStore)
 const {getUserMsg} = useGetUserToStore()
 
 const router = useRouter()
@@ -35,6 +35,8 @@ function findInit(getStr?) {
 		case 'teacher':
 			initSpace.value = 'init5'
 			break
+		default:
+			initSpace.value = 'init1'
 	}
 }
 
@@ -47,13 +49,34 @@ onBeforeRouteUpdate((to) => {
 	findInit(to.fullPath.split('/')[2])
 })
 
-function toManageCourse(){
-    router.push('/base/manageOfTeacher')
+function toUserInformationOfManage(){
+    router.push('/base/manage/userInformationOfManage')
 }
-
+function toMyOrderOfManage(){
+    router.push('/base/manage/myOrderOfManage')
+}
+function toMyCourseOfManage(){
+    router.push('/base/manage/myCourseOfManage')
+}
+function toSearchCheckOfManage(){
+    router.push('/base/manage/searchCheckOfManage')
+}
+function toMyLiveOfManage(){
+    router.push('/base/manage/myLiveOfManage')
+}
+function toUserOfAdminManage(){
+    router.push('/base/manage/userOfAdminManage')
+}
+function toCheckOfAdminManage(){
+    router.push('/base/manage/checkOfAdminManage')
+}
+function toAddArticleOfAdminManage(){
+    router.push('/base/manage/addArticleOfAdminManage')
+}
 function logout(){
     sessionStorage.removeItem("user");
     getUserMsg()
+    toHome()
     ElNotification({
         message: '退出成功',
         type: 'success',
@@ -111,11 +134,15 @@ function toHome(){
                         <span class="el-dropdown-link">{{userName}}<el-icon class="el-icon--right"><arrow-down /></el-icon></span>
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item>Action 1</el-dropdown-item>
-                                <el-dropdown-item @click="toManageCourse">课程管理</el-dropdown-item>
-                                <el-dropdown-item>Action 3</el-dropdown-item>
-                                <el-dropdown-item disabled>Action 4</el-dropdown-item>
-                                <el-dropdown-item divided @click="logout">退出登录</el-dropdown-item>
+                                <el-dropdown-item @click="toUserInformationOfManage" :icon="User">个人信息</el-dropdown-item>
+                                <el-dropdown-item @click="toMyOrderOfManage" :icon="ShoppingCart">我的订单</el-dropdown-item>
+                                <el-dropdown-item @click="toMyCourseOfManage" v-if="userLevel == 'teacher'" :icon="VideoPlay">课程管理</el-dropdown-item>
+                                <el-dropdown-item @click="toSearchCheckOfManage" v-if="userLevel == 'teacher'" :icon="Search">审核查询</el-dropdown-item>
+                                <el-dropdown-item @click="toMyLiveOfManage" v-if="userLevel == 'teacher'" :icon="VideoCamera">我的直播</el-dropdown-item>
+                                <el-dropdown-item @click="toUserOfAdminManage" v-if="userLevel == 'admin'" :icon="Setting">管理中心</el-dropdown-item>
+                                <el-dropdown-item @click="toCheckOfAdminManage" v-if="userLevel == 'admin'" :icon="View">审核中心</el-dropdown-item>
+                                <el-dropdown-item @click="toAddArticleOfAdminManage" v-if="userLevel == 'admin'" :icon="DocumentAdd">文章添加</el-dropdown-item>
+                                <el-dropdown-item divided @click="logout" :icon="Smoking">退出登录</el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
                     </el-dropdown>
