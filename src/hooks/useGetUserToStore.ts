@@ -13,6 +13,7 @@ export default function (){
 				userEmail: sessionUser.userEmail,
 				userLevel: sessionUser.userLevel,
 				userCreateTime: sessionUser.userCreateTime,
+				teacherId: sessionUser.teacherId,
 				token: sessionUser.token,
 			})
 

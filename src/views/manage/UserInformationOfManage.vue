@@ -6,11 +6,14 @@ import { Plus } from '@element-plus/icons-vue'
 import {useUserStore} from "@/store/user";
 import {storeToRefs} from "pinia";
 import * as dayjs from 'dayjs'
-import * as duration from 'dayjs/plugin/duration' // 导入插件
+import * as duration from 'dayjs/plugin/duration'
+import request from "@/utils/request"; // 导入插件
+
 
 const userStore = useUserStore()
-const {userName,userGender,userPhone,userAvatarUrl,userEmail,userLevel,userCreateTime,teacherId} = storeToRefs(userStore)
+const {userId,userName,userGender,userPhone,userAvatarUrl,userEmail,userLevel,userCreateTime,teacherId} = storeToRefs(userStore)
 const userInfoForm = ref({
+    userId:userId.value,
     userAvatarUrl: userAvatarUrl.value,
     userName: userName.value,
     userGender: userGender.value,
@@ -23,7 +26,43 @@ const userInfoForm = ref({
     teacherDescribe:null,
     teacherRate:null,
     teacherImgUrl:null,
-    teacherTags: [],
+    tags: [],
+})
+
+function getTeacherInfo(){
+    console.log(teacherId.value)
+    request.get(
+      "/teacher/getTeacherById",
+      {
+          params: {teacherId: teacherId.value}
+      }
+    ).then(res => {
+        if (res.code === '200'){
+            userInfoForm.value.teacherOutline = res.data.teacherOutline
+            userInfoForm.value.teacherDescribe = res.data.teacherDescribe
+            userInfoForm.value.teacherRate = res.data.teacherRate
+            userInfoForm.value.teacherImgUrl = res.data.teacherImgUrl
+        }
+    })
+}
+function getTags(){
+    request.get(
+      "/tag/getTagsById",
+      {
+          params: {teacherId: teacherId.value}
+      }
+    ).then(res => {
+        if (res.code === '200'){
+            userInfoForm.value.tags = res.data.tags
+        }
+    })
+}
+
+onBeforeMount(() => {
+    if (userLevel.value == 'teacher'){
+        getTeacherInfo()
+        getTags()
+    }
 })
 
 let comeDays = computed(() => {
@@ -36,11 +75,17 @@ function onSubmit() {
     console.log('submit!')
 }
 
-
+/**
+ * 头像上传
+ * @param response
+ * @param uploadFile
+ */
 const handleAvatarSuccess: UploadProps['onSuccess'] = (response, uploadFile) => {
-    // userInfoForm.value.userAvatarUrl = URL.createObjectURL(uploadFile.raw!)
+    userInfoForm.value.userAvatarUrl = response.data
 }
-
+const handleAvatarSuccess2: UploadProps['onSuccess'] = (response, uploadFile) => {
+    userInfoForm.value.teacherImgUrl = response.data
+}
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
     if (rawFile.type !== 'image/jpeg') {
         ElMessage.error('Avatar picture must be JPG format!')
@@ -52,7 +97,7 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
     return true
 }
 
-const tags = ref(['言语优质讲师','面试主讲','公考申论主讲','数资大神','授课幽默','思路清晰'])
+const tags = ref(['言语优质讲师','面试主讲','公考申论主讲','数资大神','授课逻辑缜密','思路清晰'])
 
 </script>
 
@@ -70,7 +115,7 @@ const tags = ref(['言语优质讲师','面试主讲','公考申论主讲','数�
             <el-form-item label="用户头像">
                 <el-upload
                   class="avatar-uploader"
-                  action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+                  action="http://localhost:8009/files/imageUpload"
                   :show-file-list="false"
                   :on-success="handleAvatarSuccess"
                   :before-upload="beforeAvatarUpload"
@@ -100,25 +145,25 @@ const tags = ref(['言语优质讲师','面试主讲','公考申论主讲','数�
                     <el-button style="margin-left: 10px;" v-if="userInfoForm.userLevel == 'normal'">升级为vip</el-button>
                 </div>
             </el-form-item>
-            <el-form-item label="教师概述">
+            <el-form-item label="教师概述" v-if="userLevel=='teacher'">
                 <el-input v-model="userInfoForm.teacherOutline" />
             </el-form-item>
-            <el-form-item label="教师详细介绍">
+            <el-form-item label="教师详细介绍" v-if="userLevel=='teacher'">
                 <el-input v-model="userInfoForm.teacherDescribe" />
             </el-form-item>
-            <el-form-item label="教师封面">
+            <el-form-item label="教师封面" v-if="userLevel=='teacher'">
                 <el-upload
                   class="avatar-uploader"
-                  action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+                  action="http://localhost:8009/files/imageUpload"
                   :show-file-list="false"
-                  :on-success="handleAvatarSuccess"
+                  :on-success="handleAvatarSuccess2"
                   :before-upload="beforeAvatarUpload"
                 >
                     <img v-if="userInfoForm.teacherImgUrl" :src="userInfoForm.teacherImgUrl" class="avatar" />
                     <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
                 </el-upload>
             </el-form-item>
-            <el-form-item label="学生评分">
+            <el-form-item label="学生评分" v-if="userLevel=='teacher'">
                 <el-rate
                   v-if="userInfoForm.teacherRate != 0"
                   v-model="userInfoForm.teacherRate"
@@ -129,8 +174,8 @@ const tags = ref(['言语优质讲师','面试主讲','公考申论主讲','数�
                 />
                 <div v-if="userInfoForm.teacherRate == 0">暂无评价</div>
             </el-form-item>
-            <el-form-item label="教师标签">
-                <el-checkbox-group v-model="userInfoForm.teacherTags" size="large" :max="2">
+            <el-form-item label="教师标签" v-if="userLevel=='teacher'">
+                <el-checkbox-group v-model="userInfoForm.tags" size="large" :max="2">
                     <el-checkbox v-for="tag in tags" :key="tag" :label="tag" border />
                 </el-checkbox-group>
             </el-form-item>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, onMounted, toRef, onBeforeMount, onBeforeUnmount, onUnmounted} from "vue";
+import {ref, onMounted, toRef, onBeforeMount, onBeforeUnmount, onUnmounted, computed} from "vue";
 import type { UploadProps, UploadUserFile } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import EmojiPicker from 'vue3-emoji-picker'
@@ -107,11 +107,16 @@ function onSelectEmoji(emoji) {
  * 分页+无限滚动
  */
 const pageMsg = ref({
-  currentPage:1,
+  currentPage:0,
   pageSize:5,
+  total:null,
  })
 const weiboList = ref([])
+let disabled = computed(() => {
+  return weiboList.value.length == pageMsg.value.total;
+})
 const load = () => {
+  pageMsg.value.currentPage++
   getWeiboListScroll()
  }
 function getWeiboListScroll(){
@@ -123,7 +128,7 @@ function getWeiboListScroll(){
   ).then(res => {
     if (res.code === '200'){
       weiboList.value = weiboList.value.concat(res.data.records)
-      pageMsg.value.currentPage++
+      pageMsg.value.total = res.data.total
       console.log(weiboList.value)
     }
   })
@@ -191,7 +196,7 @@ function getWeiboListScroll(){
               <el-button class="post-button" @click="post" type="primary" round>发布</el-button>
           </div>
       </div>
-      <div class="talk-list" v-infinite-scroll="load">
+      <div class="talk-list" v-infinite-scroll="load" :infinite-scroll-disabled="disabled">
         <talk-card v-for="weibo in weiboList"  :weibo="weibo"/>
       </div>
 	</div>

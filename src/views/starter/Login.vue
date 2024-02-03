@@ -24,7 +24,7 @@ function login() {
 			showClose: true,
 			message: '请输入账号或密码',
 			type: 'error'
-		});
+		})
 	} else {
 		request.post(
 			"/user/login",

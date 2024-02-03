@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import {ref} from "vue";
+import {computed, reactive, ref} from "vue";
 import * as dayjs from 'dayjs'
-import ReplyCard from "@/components/ReplyCard.vue";
 import {Plus} from "@element-plus/icons-vue";
-import {ElMessage, UploadProps} from "element-plus";
+import {ElMessage, ElNotification, UploadProps} from "element-plus";
 import request from "@/utils/request";
 
 function formatterGender(row){
@@ -29,13 +28,8 @@ function formatterTime(row){
     return dayjs(row.userCreateTime).format('YYYY.MM.DD HH:mm')
 }
 
-function onSubmit() {
-    console.log('submit!')
-}
-
-
 const handleAvatarSuccess: UploadProps['onSuccess'] = (response, uploadFile) => {
-    // userInfoForm.value.userAvatarUrl = URL.createObjectURL(uploadFile.raw!)
+    tableScope.value.userAvatarUrl = response.data
 }
 
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
@@ -48,53 +42,158 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
     }
     return true
 }
-
+/**
+ * 编辑用户信息
+ */
 let editDialogVisible = ref(false)
 let tableScope = ref({})
-function edit(row){
-    tableScope.value = row
+function edit(scope){
+    tableScope.value = JSON.parse(JSON.stringify(scope.row))
+    tableScope.value.index = scope.$index
     editDialogVisible.value = true
 }
+function submitEdit(){
+    request.post(
+      'http://localhost:8009/user/updateUserInfo',
+      tableScope.value,
+    ).then(res => {
+        if (res.code == '200'){
+            userList.value[tableScope.value.index] = JSON.parse(JSON.stringify(tableScope.value))
+            editDialogVisible.value = false
+            ElNotification({
+                message: '修改成功！',
+                type: 'success',
+                offset: 50,
+                duration: 1200,
+            })
+        }else {
+            ElMessage({
+                message: '修改失败！',
+                type: "error",
+                showClose: true,
+            })
+        }
+    })
+}
 
+
+/**
+ * 重置密码
+ */
 let resetDialogVisible = ref(false)
 const resetPassword = ref({
-    password:'',
+    userId:null,
+    userPassword:'',
     checkPassword:''
 })
-
 const validateCheckPassword = (rule, value, callback) => {
 
     if (value === '') {
         callback(new Error('请再次输入密码'));
-    } else if (value !== resetPassword.value.password) {
+    } else if (value !== resetPassword.value.userPassword) {
         callback(new Error('两次输入密码不一致!'));
     } else {
         callback();
     }
 }
-
 let rules = ref({
     checkPassword: [
         { validator: validateCheckPassword, required: true, trigger: "blur"},
     ],
-    password: [
+    userPassword: [
         {required: true, message: "请输入密码", trigger: "blur"}
     ],
 
 })
+let resetPasswordForm = ref(null)
+function reset(row){
+    resetPassword.value.userId = row.userId
+    resetDialogVisible.value = true
+}
+function submitReset(){
+    resetPasswordForm.value.validate((valid) => {
+        if(valid){//若表单校验合法，则回调函数中valid参数为true，不合法为false
+            request.post(
+              "/user/resetPassword",
+              resetPassword.value
+            ).then(res => {
+                resetDialogVisible.value = false
+                if(res.code == '200'){
+                    ElNotification({
+                        message: '密码重置成功！',
+                        type: 'success',
+                        offset: 50,
+                        duration: 1200,
+                    })
+                }else{
+                    ElMessage.error('密码重置失败!')
+                }
+            })
+        }
+    })
+}
 
+/**
+ * 注销用户
+ */
+function deleteUser(scope){
+    request.get(
+        '/user/deleteUser',
+      {
+        params:{userId:scope.row.userId}
+      },
+    ).then(res => {
+        if (res.code === '200'){
+            userList.value.splice(scope.$index,1)
+            ElNotification({
+                message: '用户注销成功！',
+                type: 'success',
+                offset: 50,
+                duration: 1200,
+            })
+        }
+    })
+}
+
+/**
+ * 添加教师
+ */
+function addTeacher(scope){
+    request.get(
+        '/user/changeUserLevelToTeacher',
+      {
+        params:{ userId:scope.row.userId }
+      },
+    ).then(res => {
+        if (res.code == '200'){
+            scope.row.userLevel = 'teacher'
+            ElNotification({
+                message: '添加教师成功！',
+                type: 'success',
+                offset: 50,
+                duration: 1200,
+            })
+        }else {
+            ElMessage.error('添加失败！')
+        }
+    })
+}
 
 /**
  * 分页+无限滚动
  */
 const userList = ref([])
 const pageMsg = ref({
-    currentPage:1,
-    pageSize:5,
+    currentPage:0,
+    pageSize:10,
+    total:null,
 })
-const weiboList = ref([])
+let disabled = computed(() => {
+    return userList.value.length == pageMsg.value.total;
+})
 const load = () => {
-    getUserListScroll()
+        pageMsg.value.currentPage++
+        getUserListScroll()
 }
 function getUserListScroll(){
     request.get(
@@ -105,15 +204,17 @@ function getUserListScroll(){
     ).then(res => {
         if (res.code === '200'){
             userList.value = userList.value.concat(res.data.records)
-            pageMsg.value.currentPage++
+            pageMsg.value.total = res.data.total
         }
     })
 }
 
+
+
 </script>
 
 <template>
-    <div class="content" v-infinite-scroll="load">
+    <div class="content" v-infinite-scroll="load" :infinite-scroll-disabled="disabled">
         <div class="title">用户管理</div>
         <el-divider class="divider"/>
 
@@ -131,14 +232,14 @@ function getUserListScroll(){
             <el-table-column prop="userCreateTime" label="创建时间" :formatter="formatterTime"/>
             <el-table-column label="操作" width="400">
                 <template #default="scope">
-                    <el-button type="primary" @click="edit(scope.row)">编辑</el-button>
-                    <el-popconfirm title="你确定要将此用户修改为教师吗?" confirm-button-text="确定" cancel-button-text="取消">
+                    <el-button type="primary" @click="edit(scope)">编辑</el-button>
+                    <el-popconfirm title="你确定要将此用户修改为教师吗?" confirm-button-text="确定" cancel-button-text="取消" @confirm="addTeacher(scope)">
                         <template #reference>
-                            <el-button type="warning" :disabled="scope.row.userLevel == 'teacher'">添加教师</el-button>
+                            <el-button type="warning" :disabled="(scope.row.userLevel == 'teacher') || (scope.row.userLevel == 'admin')">添加教师</el-button>
                         </template>
                     </el-popconfirm>
-                    <el-button type="warning" @click="resetDialogVisible = true">重置密码</el-button>
-                    <el-popconfirm title="你确定要注销改用户吗?" confirm-button-text="确定" cancel-button-text="取消">
+                    <el-button type="warning" @click="reset(scope.row)">重置密码</el-button>
+                    <el-popconfirm title="你确定要注销改用户吗?" confirm-button-text="确定" cancel-button-text="取消" @confirm="deleteUser(scope)">
                         <template #reference>
                             <el-button type="danger">注销</el-button>
                         </template>
@@ -149,7 +250,6 @@ function getUserListScroll(){
 
         <el-dialog v-model="editDialogVisible" title="编辑"  class="edit-dialog" width="540px">
             <el-form
-              ref="form"
               :model="tableScope"
               label-width="auto"
               label-position="right"
@@ -158,7 +258,7 @@ function getUserListScroll(){
                 <el-form-item label="用户头像">
                     <el-upload
                       class="avatar-uploader"
-                      action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+                      action="http://localhost:8009/files/imageUpload"
                       :show-file-list="false"
                       :on-success="handleAvatarSuccess"
                       :before-upload="beforeAvatarUpload"
@@ -193,14 +293,14 @@ function getUserListScroll(){
                     </el-select>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" @click="onSubmit" style="margin: 0 auto;">保存修改</el-button>
+                    <el-button type="primary" @click="submitEdit" style="margin: 0 auto;">保存修改</el-button>
                 </el-form-item>
             </el-form>
         </el-dialog>
 
         <el-dialog v-model="resetDialogVisible" title="重置密码"  class="reset-dialog" width="540px">
             <el-form
-              ref="form"
+              ref="resetPasswordForm"
               :model="resetPassword"
               label-width="auto"
               label-position="right"
@@ -210,7 +310,7 @@ function getUserListScroll(){
                 <el-form-item label="密码" prop="password">
                     <el-input
                       type="password"
-                      v-model="resetPassword.password"
+                      v-model="resetPassword.userPassword"
                       autocomplete="off"
                       clearable
                     ></el-input>
@@ -224,7 +324,7 @@ function getUserListScroll(){
                     ></el-input>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" @click="onSubmit" style="margin: 0 auto;">保存修改</el-button>
+                    <el-button type="primary" @click="submitReset" style="margin: 0 auto;">确认重置</el-button>
                 </el-form-item>
             </el-form>
         </el-dialog>
