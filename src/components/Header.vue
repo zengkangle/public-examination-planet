@@ -18,7 +18,7 @@ const router = useRouter()
 let initSpace = ref()
 function findInit(getStr?) {
 	let str
-	getStr ? str = getStr : str = router.currentRoute.value.fullPath.split('/')[2]
+	getStr ? str = getStr : str = router.currentRoute.value.fullPath.split('?')[0].split('/')[2]
 	switch (str) {
 		case 'home':
 			initSpace.value = 'init1'
@@ -35,8 +35,9 @@ function findInit(getStr?) {
 		case 'teacher':
 			initSpace.value = 'init5'
 			break
-		default:
-			initSpace.value = 'init1'
+		case 'teacherDetail':
+      initSpace.value = 'init5'
+      break
 	}
 }
 
@@ -46,7 +47,7 @@ onBeforeMount(() => {
 })
 
 onBeforeRouteUpdate((to) => {
-	findInit(to.fullPath.split('/')[2])
+	findInit(to.fullPath.split('?')[0].split('/')[2])
 })
 
 function toUserInformationOfManage(){
@@ -184,6 +185,7 @@ function toHome(){
     background-color: #ffff;
     border-radius: 4px;
     position: absolute;
+    left: 50px;
     bottom: 1px;
     transition: all ease, 0.4s;
 }

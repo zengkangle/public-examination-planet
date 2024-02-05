@@ -164,7 +164,10 @@ const router = createRouter({
         },
         {
           path: 'teacherDetail',
-          component: TeacherDetail
+          component: TeacherDetail,
+          props(route){
+            return route.query
+          }
         },
         {
           path: 'liveRoom',

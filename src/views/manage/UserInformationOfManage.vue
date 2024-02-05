@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import {computed, onBeforeMount, ref} from "vue";
-import {ElMessage} from 'element-plus'
+import {ElMessage, ElNotification} from 'element-plus'
 import type { UploadProps } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import {useUserStore} from "@/store/user";
 import {storeToRefs} from "pinia";
 import * as dayjs from 'dayjs'
 import * as duration from 'dayjs/plugin/duration'
-import request from "@/utils/request"; // 导入插件
+import request from "@/utils/request";
+import useGetUserToStore from "@/hooks/useGetUserToStore"; // 导入插件
 
 
 const userStore = useUserStore()
@@ -29,6 +30,14 @@ const userInfoForm = ref({
     tags: [],
 })
 
+/**
+ * 初始化个人信息
+ */
+const tags = ref(['言语优质讲师','面试主讲','公考申论主讲','数资大神','授课逻辑缜密','思路清晰'])
+let comeDays = computed(() => {
+    dayjs.extend(duration)
+    return dayjs.duration(dayjs().diff(dayjs(userInfoForm.value.userCreateTime))).days()
+})
 function getTeacherInfo(){
     console.log(teacherId.value)
     request.get(
@@ -53,7 +62,8 @@ function getTags(){
       }
     ).then(res => {
         if (res.code === '200'){
-            userInfoForm.value.tags = res.data.tags
+            console.log(res.data)
+            userInfoForm.value.tags = res.data
         }
     })
 }
@@ -65,14 +75,41 @@ onBeforeMount(() => {
     }
 })
 
-let comeDays = computed(() => {
-    dayjs.extend(duration)
-    return dayjs.duration(dayjs().diff(dayjs(userInfoForm.value.userCreateTime))).days()
-})
 
-
-function onSubmit() {
-    console.log('submit!')
+/**
+ * 提交用户修改
+ */
+function submitEdit() {
+    request.post(
+        '/user/updateUserInfoPlus',
+        userInfoForm.value,
+    ).then(res => {
+        if (res.code == '200'){
+            ElNotification({
+                message: '修改成功！',
+                type: 'success',
+                offset: 50,
+                duration: 1200,
+            })
+            request.get(
+              "/user/getUserMsg",
+              {
+                  params:{userId: userId.value}
+              }
+            ).then(res => {
+                if (res.code === '200') {
+                    res.data.token = JSON.parse(sessionStorage.getItem('user')).token
+                    sessionStorage.removeItem("user")
+                    sessionStorage.setItem("user", JSON.stringify(res.data))//存储用户信息到浏览器
+                    const {getUserMsg} = useGetUserToStore()
+                    getUserMsg()
+                }
+            }).then(() => {
+                  getTags()
+                  getTeacherInfo()
+            })
+        }
+    })
 }
 
 /**
@@ -97,7 +134,6 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
     return true
 }
 
-const tags = ref(['言语优质讲师','面试主讲','公考申论主讲','数资大神','授课逻辑缜密','思路清晰'])
 
 </script>
 
@@ -183,7 +219,7 @@ const tags = ref(['言语优质讲师','面试主讲','公考申论主讲','数�
                 <div>{{comeDays}}天</div>
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" @click="onSubmit">保存修改</el-button>
+                <el-button type="primary" @click="submitEdit">保存修改</el-button>
             </el-form-item>
         </el-form>
     </div>

@@ -1,8 +1,25 @@
 <script setup lang="ts">
-import {ref} from "vue";
+import {onBeforeMount, ref} from "vue";
 import StudentRate from "@/components/StudentRate.vue";
+import request from "@/utils/request";
 
-let rateValue = ref(4.6)
+const {teacherId,userName} = defineProps(['teacherId','userName'])
+const teacherInfo = ref({})
+function getTeacherInfo(){
+  request.get(
+    '/teacher/getTeacherById',
+    {
+      params:{teacherId:teacherId}
+    },
+  ).then(res => {
+    if (res.code == '200'){
+      teacherInfo.value = res.data
+    }
+  })
+}
+onBeforeMount(() => {
+  getTeacherInfo()
+})
 </script>
 
 <template>
@@ -14,25 +31,28 @@ let rateValue = ref(4.6)
         </div>
         <div class="body-box">
             <div class="photo">
-                <img src="../assets/teacher1.png" alt="" class="teacher-image" />
+                <img :src="teacherInfo.teacherImgUrl" alt="" class="teacher-image" />
             </div>
             <div class="teacher-detail-box">
-                <div class="teacher-name">雷军</div>
+                <div class="teacher-name">{{ userName }}</div>
                 <div class="teacher-info-box">
-                    <div class="teacher-info">公考星球言语理解与表达、面试优质讲师111111</div>
+                    <div class="teacher-info">{{ teacherInfo.teacherOutline }}</div>
+                  <div class="rate-box">
                     <el-rate
-                            v-model="rateValue"
-                            disabled
-                            show-score
-                            text-color="#ff9900"
-                            score-template="{value}"
-                            size="large"
-                            class="rate"
+                      v-model="teacherInfo.teacherRate"
+                      disabled
+                      show-score
+                      text-color="#ff9900"
+                      score-template="{value}"
+                      size="large"
+                      class="rate"
+                      v-if="teacherInfo.teacherRateCount != 0"
                     />
-                    <div class="rate-title">已有787979人评分</div>
+                    <div class="rate-title">已有{{teacherInfo.teacherRateCount}}人评分</div>
+                  </div>
                 </div>
                 <el-divider class="divider2"/>
-                <div class="teacher-describe">公考星球言语理解与表达、面试优质讲师。10年公考授课经验，评分人数超过150万。专业功底扎实，教学经验丰富，教学方法针对性强，能让学员在短时间内熟练掌握解题技巧；善于引导和启发学员，亦庄亦谐、寓教于乐，深受学员好评。</div>
+                <div class="teacher-describe">{{teacherInfo.teacherDescribe}}</div>
             </div>
         </div>
         <div class="student-rate">
@@ -77,12 +97,19 @@ let rateValue = ref(4.6)
 	display: flex;
 	margin-top: 30px;
 }
+.photo{
+  width: 350px;
+  height: 500px;
+  flex-shrink: 0;
+}
 .teacher-image{
-	width: 400px;
-	object-fit: fill;
+  width: 100%;
+  height: 100%;
+	object-fit: cover;
 	border-radius: 8px;
 }
 .teacher-detail-box{
+  flex-grow: 1;
   margin-left: 80px;
 }
 .teacher-name{
@@ -100,14 +127,18 @@ let rateValue = ref(4.6)
 }
 .rate{
 	position: relative;
-	left: 250px;
 	top: 2px;
 }
 .rate-title{
-	color: #666666;
-	font-size: 20px;
-	position: relative;
-	left: 270px;
+  color: #666666;
+  font-size: 20px;
+  margin-left: 15px;
+}
+.rate-box{
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: end;
 }
 .divider2{
 	margin-top: 10px;
@@ -118,6 +149,7 @@ let rateValue = ref(4.6)
 	padding: 24px 31px;
 	border-radius: 25px 0 25px 0;
 	font-size: 20px;
+	word-wrap: break-word;
 }
 .student-rate{
   margin-top: 20px;

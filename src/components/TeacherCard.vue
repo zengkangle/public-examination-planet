@@ -1,15 +1,24 @@
 <script setup lang="ts">
-
+const {teacher} = defineProps(['teacher'])
 </script>
 
 <template>
     <div class="teacher-list">
         <div class="card">
-            <div class="photo"><img src="../assets/teacher1.png" alt=""></div>
-            <h1>雷军</h1>
-            <h2>wwwwww</h2>
-            <div class="desc">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-            <router-link to="/base/teacherDetail">了解更多</router-link>
+            <div class="photo"><img :src="teacher.teacherImgUrl" alt=""></div>
+            <h1>{{teacher.userName}}</h1>
+            <h2>{{ teacher.teacherOutline }}</h2>
+            <div class="desc">
+                <el-text line-clamp="3" style="color: #fff">{{ teacher.teacherDescribe }}</el-text>
+            </div>
+            <router-link
+                :to="{
+                    path:'/base/teacherDetail',
+                    query:{
+                        teacherId:teacher.teacherId,
+                        userName:teacher.userName,
+                    }
+                 }">了解更多</router-link>
         </div>
     </div>
 </template>
@@ -40,7 +49,6 @@
     top: 0;
     width: 100%;
     height: 100%;
-    //border-radius: 0;
     overflow: hidden;
     transition: 0.5s;
 }

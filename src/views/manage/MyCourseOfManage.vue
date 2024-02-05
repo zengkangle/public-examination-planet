@@ -123,8 +123,8 @@ function showUploadDialog() {
                 </el-form-item>
                 <el-form-item label="请选择课程节数" label-width="140px">
                     <el-select v-model="form.region" placeholder="请选择课程节数">
-                        <el-option label="第一节课" value="shanghai"/>
                         <el-option label="新增课时" value="beijing"/>
+                        <el-option label="第一节课" value="shanghai" v-for="i in 100"/>
                     </el-select>
                 </el-form-item>
                 <el-form-item label="选择视频" label-width="140px">

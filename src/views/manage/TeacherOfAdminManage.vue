@@ -39,11 +39,11 @@ function edit(scope){
 }
 function submitEdit(){
     request.post(
-      'http://localhost:8009/user/updateUserInfo',
+      'http://localhost:8009/user/updateUserInfoPlus',
       tableScope.value,
     ).then(res => {
         if (res.code == '200'){
-            userList.value[tableScope.value.index] = JSON.parse(JSON.stringify(tableScope.value))
+            teacherList.value[tableScope.value.index] = JSON.parse(JSON.stringify(tableScope.value))
             editDialogVisible.value = false
             ElNotification({
                 message: '修改成功！',
@@ -118,16 +118,30 @@ function getTeacherListScroll(){
         <div class="title">教师管理</div>
         <el-divider class="divider"/>
         <el-table :data="teacherList" style="width: 100%">
-            <el-table-column prop="teacherImgUrl" label="教师封面" width="180">
+            <el-table-column prop="teacherImgUrl" label="教师封面">
                 <template #default="scope">
                     <el-avatar shape="square" :size="50" :src="scope.row.teacherImgUrl" />
                 </template>
             </el-table-column>
-            <el-table-column prop="userName" label="用户名称" width="180"/>
+            <el-table-column prop="userName" label="用户名称"/>
             <el-table-column prop="userGender" label="性别" :formatter="formatterGender"/>
-            <el-table-column prop="tags" label="教师标签"/>
-            <el-table-column prop="teacherOutline" label="教师概述"/>
-            <el-table-column prop="teacherDescribe" label="教师详细描述"/>
+            <el-table-column prop="tags" label="教师标签" width="220px">
+                <template #default="scope">
+                    <div class="tagList">
+                        <el-tag v-for="tag in scope.row.tags" :key="tag" style="margin-right: 5px;">{{tag}}</el-tag>
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column prop="teacherOutline" label="教师概述">
+                <template #default="scope">
+                    <el-text line-clamp="1" >{{ scope.row.teacherOutline }}</el-text>
+                </template>
+            </el-table-column>
+            <el-table-column prop="teacherDescribe" label="教师详细描述">
+                <template #default="scope">
+                    <el-text line-clamp="1" >{{ scope.row.teacherDescribe }}</el-text>
+                </template>
+            </el-table-column>
             <el-table-column prop="teacherRate" label="教师评分" :formatter="formatterRate"/>
             <el-table-column prop="isShow" label="是否在师资中展示" :formatter="formatterShow"/>
             <el-table-column label="操作">
@@ -167,7 +181,7 @@ function getTeacherListScroll(){
                     </el-radio-group>
                 </el-form-item>
                 <el-form-item label="教师标签">
-                    <el-checkbox-group v-model="tableScope.teacherTags" size="large" :max="2">
+                    <el-checkbox-group v-model="tableScope.tags" size="large" :max="2">
                         <el-checkbox v-for="tag in tags" :key="tag" :label="tag" border />
                     </el-checkbox-group>
                 </el-form-item>
@@ -178,7 +192,7 @@ function getTeacherListScroll(){
                     <el-input v-model="tableScope.teacherDescribe" type="textarea"/>
                 </el-form-item>
                 <el-form-item label="是否在师资中展示">
-                    <el-radio-group v-model="tableScope.userGender">
+                    <el-radio-group v-model="tableScope.isShow">
                         <el-radio border :label="1">展示</el-radio>
                         <el-radio border :label="0">不展示</el-radio>
                     </el-radio-group>
