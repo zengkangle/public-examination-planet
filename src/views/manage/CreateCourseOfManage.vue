@@ -19,22 +19,20 @@ const createCourseForm = ref({
 })
 const tags = ref(['考前点睛冲刺','历年真题讲解','一关攻克一考点','查漏补缺重点强化','热点及时掌握'])
 function submitCreat(){
-    console.log(form.value.resetFields)
-    form.value.resetFields()
-    // request.post(
-    //     '/course/createCourse',
-    //     createCourseForm.value
-    // ).then(res => {
-    //     if (res.code == '200'){
-    //         ElNotification({
-    //             message: '创建成功！请到我的课程中查看~',
-    //             type: 'success',
-    //             offset: 50,
-    //             duration: 1200,
-    //         })
-    //         form.value.resetFields()
-    //     }
-    // })
+    request.post(
+        '/course/createCourse',
+        createCourseForm.value
+    ).then(res => {
+        if (res.code == '200'){
+            ElNotification({
+                message: '创建成功！请到我的课程中查看~',
+                type: 'success',
+                offset: 50,
+                duration: 1200,
+            })
+            form.value.resetFields()
+        }
+    })
 
 }
 </script>
@@ -50,23 +48,23 @@ function submitCreat(){
           label-position="right"
           size="large"
         >
-            <el-form-item label="课程标题">
+            <el-form-item label="课程标题" prop="courseTitle">
                 <el-input v-model="createCourseForm.courseTitle" />
             </el-form-item>
-            <el-form-item label="课程概述">
+            <el-form-item label="课程概述" prop="courseOutline">
                 <el-input v-model="createCourseForm.courseOutline" />
             </el-form-item>
-            <el-form-item label="课程售价">
-                <el-input v-model="createCourseForm.coursePrice" />
+            <el-form-item label="课程售价" prop="coursePrice">
+                <el-input-number v-model="createCourseForm.coursePrice" :precision="2" :step="10" />
             </el-form-item>
-            <el-form-item label="课程类型">
+            <el-form-item label="课程类型" prop="courseType">
                 <el-radio-group v-model="createCourseForm.courseType">
                     <el-radio border label="公考笔试"/>
                     <el-radio border label="公考面试"/>
                     <el-radio border label="事业单位"/>
                 </el-radio-group>
             </el-form-item>
-            <el-form-item label="课程标签">
+            <el-form-item label="课程标签" prop="tags">
                 <el-checkbox-group v-model="createCourseForm.tags" size="large" :max="2">
                     <el-checkbox v-for="tag in tags" :key="tag" :label="tag" border />
                 </el-checkbox-group>

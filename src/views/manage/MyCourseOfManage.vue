@@ -1,53 +1,63 @@
 <script setup lang="ts">
-import {ref, onMounted, nextTick} from "vue";
-import { UploadFilled } from '@element-plus/icons-vue'
-const tableData = [
-	{
-		title: '笔试系统班图书大礼包：2025国考/2024广东省考',
-		subtitle: '重难点夯实 刷题冲刺至考前',
-		price: 999,
-		order: 141,
-	},
-	{
-		title: '笔试系统班图书大礼包：2025国考/2024广东省考',
-		subtitle: '重难点夯实 刷题冲刺至考前',
-		price: 999,
-		order: 141,
-	},
-	{
-		title: '笔试系统班图书大礼包：2025国考/2024广东省考',
-		subtitle: '重难点夯实 刷题冲刺至考前',
-		price: 999,
-		order: 141,
-	},
-	{
-		title: '笔试系统班图书大礼包：2025国考/2024广东省考',
-		subtitle: '重难点夯实 刷题冲刺至考前',
-		price: 999,
-		order: 141,
-	},
-]
-const pageMsg = ref({currentPage: 1, pageSize: 10, total: 30})
-const dialogFormVisible = ref(false)
-const dialogUploadVisible = ref(false)
-const form = ref({
-	name: '',
-	region: '',
-	date1: '',
-	date2: '',
-	delivery: false,
-	type: [],
-	resource: '',
-	desc: '',
-})
+import {ref,computed} from "vue";
+import {Plus, UploadFilled} from '@element-plus/icons-vue'
+import request from "@/utils/request";
+import * as dayjs from 'dayjs'
+import {ElMessage, ElNotification} from "element-plus";
 
+const tags = ref(['考前点睛冲刺','历年真题讲解','一关攻克一考点','查漏补缺重点强化','热点及时掌握'])
 
+function formatterTime(row){
+    return dayjs(row.createTime).format('YYYY.MM.DD HH:mm')
+}
+function formatterRate(row){
+    if (row.courseRateCount == 0){
+        return '暂无学生评价'
+    }else {
+        return row.teacherRate
+    }
+}
+
+/**
+ * 编辑
+ */
+let editDialogVisible = ref(false)
+const tableScope = ref({})
+function edit(scope){
+    tableScope.value = JSON.parse(JSON.stringify(scope.row))
+    tableScope.value.index = scope.$index
+    editDialogVisible.value = true
+}
+function submitEdit(){
+    request.post(
+      'http://localhost:8009/course/updateCourseInfo',
+      tableScope.value,
+    ).then(res => {
+        if (res.code == '200'){
+            courseList.value[tableScope.value.index] = JSON.parse(JSON.stringify(tableScope.value))
+            editDialogVisible.value = false
+            ElNotification({
+                message: '修改成功！',
+                type: 'success',
+                offset: 50,
+                duration: 1200,
+            })
+        }else {
+            ElMessage({
+                message: '修改失败！',
+                type: "error",
+                showClose: true,
+            })
+        }
+    })
+}
+
+/**
+ * 视频上传
+ */
 const options = {
 	target: 'http://localhost:8009/files/videoUpload',
 	testChunks: false
-}
-const attrs = {
-	accept: 'image/*'
 }
 const statusText = {
 	success: '上传成功！',
@@ -56,78 +66,161 @@ const statusText = {
 	paused: '暂停中',
 	waiting: 'waiting'
 }
+const dialogUploadVisible = ref(false)
+const uploadVideo = ref({})
+function upload(scope) {
+    uploadVideo.value.coursePageAmount = scope.row.coursePageAmount
+    uploadVideo.value.courseId = scope.row.courseId
+    dialogUploadVisible.value = true
+}
 function onFileSuccess(rootFile, file, response) {
     let res = JSON.parse(response);
     console.log(res)
+    uploadVideo.value.videoUrl = res.data
 }
-function showEditDialog() {
-	dialogFormVisible.value = true
+function submitUpload(){
+    request.post(
+        '/video/saveCourseVideo',
+        uploadVideo.value,
+    ).then(res => {
+        if (res.code == '200'){
+            dialogUploadVisible.value = false
+            ElNotification({
+                message: '课程视频上传成功！',
+                type: 'success',
+                offset: 50,
+                duration: 1200,
+            })
+        }else {
+            ElMessage({
+                message: '视频上传失败！',
+                type: "error",
+                showClose: true,
+            })
+        }
+    })
 }
-
-function showUploadDialog() {
-	dialogUploadVisible.value = true
+/**
+ * 分页+无限滚动
+ */
+const courseList = ref([])
+const pageMsg = ref({
+    currentPage:0,
+    pageSize:10,
+    total:null,
+})
+let disabled = computed(() => {
+    return courseList.value.length == pageMsg.value.total;
+})
+const load = () => {
+    pageMsg.value.currentPage++
+    getUserListScroll()
+}
+function getUserListScroll(){
+    request.get(
+      "/course/getCourseList",
+      {
+          params:pageMsg.value
+      }
+    ).then(res => {
+        if (res.code === '200'){
+            courseList.value = courseList.value.concat(res.data.records)
+            pageMsg.value.total = res.data.total
+        }
+    })
 }
 </script>
 
 <template>
-    <div class="content">
+    <div class="content" v-infinite-scroll="load" :infinite-scroll-disabled="disabled">
         <div class="title">我的课程</div>
         <el-divider class="divider"/>
-        <el-table :data="tableData" style="width: 100%">
-            <el-table-column prop="title" label="课程名" width="180"/>
-            <el-table-column prop="subtitle" label="子标题" width="180"/>
-            <el-table-column prop="price" label="价格"/>
-            <el-table-column prop="order" label="购买人数"/>
-            <el-table-column prop="order" label="课程节数"/>
-            <el-table-column label="标签"/>
+        <el-table :data="courseList" style="width: 100%">
+            <el-table-column prop="courseTitle" label="课程标题">
+                <template #default="scope">
+                    <el-text line-clamp="2" >{{ scope.row.courseTitle }}</el-text>
+                </template>
+            </el-table-column>
+            <el-table-column prop="courseOutline" label="课程概述">
+                <template #default="scope">
+                    <el-text line-clamp="2" >{{ scope.row.courseOutline }}</el-text>
+                </template>
+            </el-table-column>
+            <el-table-column prop="courseType" label="课程种类"/>
+            <el-table-column prop="coursePrice" label="价格"/>
+            <el-table-column prop="courseOrder" label="购买人数"/>
+            <el-table-column prop="coursePageAmount" label="课程节数"/>
+            <el-table-column prop="tags" label="标签">
+                <template #default="scope">
+                    <div class="tagList">
+                        <el-tag v-for="tag in scope.row.tags" :key="tag" style="margin-right: 5px;margin-top: 5px">{{tag}}</el-tag>
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column prop="courseStatus" label="课程状态"/>
+            <el-table-column prop="courseRate" label="课程评分" :formatter="formatterRate"/>
+            <el-table-column prop="createTime" label="创建时间" :formatter="formatterTime"/>
             <el-table-column label="操作">
-                <template #default>
-                    <el-button link type="primary" size="small" @click="showEditDialog">编辑</el-button>
-                    <el-button link type="primary" size="small" @click="showUploadDialog">上传视频</el-button>
+                <template #default="scope">
+                    <el-button link type="primary" size="small" @click="edit(scope)">编辑</el-button>
+                    <el-button link type="primary" size="small" @click="upload(scope)">上传视频</el-button>
                 </template>
             </el-table-column>
         </el-table>
-        <div class="page">
-            <el-pagination
-              :background="true"
-              layout="prev, pager, next, jumper"
-              v-model:current-page="pageMsg.currentPage"
-              v-model:page-size="pageMsg.pageSize"
-              :total="pageMsg.total"
+
+        <el-dialog v-model="editDialogVisible" title="编辑">
+            <el-form
+              ref="form"
+              :model="tableScope"
+              label-width="auto"
+              label-position="right"
+              size="large"
             >
-            </el-pagination>
-        </div>
-        <el-dialog v-model="dialogFormVisible" title="编辑">
-            <el-form :model="form">
-                <el-form-item label="Promotion name" label-width="140px">
-                    <el-input v-model="form.name" autocomplete="off"/>
+                <el-form-item label="课程标题">
+                    <el-input v-model="tableScope.courseTitle" />
                 </el-form-item>
-                <el-form-item label="Zones" label-width="140px">
-                    <el-select v-model="form.region" placeholder="Please select a zone">
-                        <el-option label="Zone No.1" value="shanghai"/>
-                        <el-option label="Zone No.2" value="beijing"/>
-                    </el-select>
+                <el-form-item label="课程概述">
+                    <el-input v-model="tableScope.courseOutline" />
+                </el-form-item>
+                <el-form-item label="课程种类">
+                    <el-radio-group v-model="tableScope.courseType">
+                        <el-radio border label="公考笔试"/>
+                        <el-radio border label="公考面试"/>
+                        <el-radio border label="事业单位"/>
+                    </el-radio-group>
+                </el-form-item>
+                <el-form-item label="价格">
+                    <el-input-number v-model="tableScope.coursePrice" :precision="2" :step="10" />
+                </el-form-item>
+                <el-form-item label="课程标签">
+                        <el-checkbox-group v-model="tableScope.tags" size="large" :max="2">
+                            <el-checkbox v-for="tag in tags" :key="tag" :label="tag" border />
+                        </el-checkbox-group>
+                </el-form-item>
+                <el-form-item label="课程状态">
+                    <el-radio-group v-model="tableScope.courseStatus">
+                        <el-radio border label="上架"/>
+                        <el-radio border label="下架"/>
+                    </el-radio-group>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="submitEdit" style="margin: 0 auto;">保存修改</el-button>
                 </el-form-item>
             </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                <el-button @click="dialogFormVisible = false">Cancel</el-button>
-                <el-button type="primary" @click="dialogFormVisible = false">Confirm</el-button>
-                </span>
-            </template>
         </el-dialog>
+
         <el-dialog v-model="dialogUploadVisible" title="视频上传">
-            <el-form :model="form">
-                <el-form-item label="视频标题" label-width="140px">
-                    <el-input v-model="form.name" autocomplete="off"/>
+            <el-form :model="uploadVideo" label-width="110px">
+                <el-form-item label="视频标题" prop="videoTitle">
+                    <el-input v-model="uploadVideo.videoTitle" autocomplete="off"/>
                 </el-form-item>
-                <el-form-item label="请选择课程节数" label-width="140px">
-                    <el-select v-model="form.region" placeholder="请选择课程节数">
-                        <el-option label="新增课时" value="beijing"/>
-                        <el-option label="第一节课" value="shanghai" v-for="i in 100"/>
+                <el-form-item label="请选择课程节数" prop="coursePage">
+                    <el-select v-model="uploadVideo.coursePage" placeholder="请选择课程节数">
+                        <el-option label="新增课程视频" :value="uploadVideo.coursePageAmount+1"/>
+                        <el-option :label="'第'+count+'节课'" v-for="count in uploadVideo.coursePageAmount" value="count"/>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="选择视频" label-width="140px">
+                <el-form-item label="选择视频"  >
                     <uploader
                       :options="options"
                       :file-status-text="statusText"
@@ -150,8 +243,7 @@ function showUploadDialog() {
             </el-form>
             <template #footer>
                 <span class="dialog-footer">
-                <el-button @click="dialogUploadVisible = false">Cancel</el-button>
-                <el-button type="primary" @click="dialogUploadVisible = false">Confirm</el-button>
+                <el-button type="primary" @click="submitUpload">确定上传</el-button>
                 </span>
             </template>
         </el-dialog>
@@ -162,11 +254,6 @@ function showUploadDialog() {
 
 .title {
     font-size: 28px;
-}
-
-.page {
-    width: 500px;
-    margin: 10px auto 0;
 }
 
 .uploader-example {
