@@ -1,20 +1,57 @@
 <script setup lang="ts">
 import {useRouter} from "vue-router";
-import {ref} from "vue/dist/vue";
+import request from "@/utils/request";
+import {ref} from "vue";
 
-// defineProps(['flag'])
-const props = defineProps({
-	flag:{
-		type: String,
-		default: 'buy'
-	}
-})
+const {course,flag} = defineProps(['course','flag'])
+
 const router = useRouter()
-function go(){
-	if (props.flag!='my'){
-			router.push('/base/buyCourseDetail')
+
+let videoUrl = ref('')
+async function findFirstVideo(){
+	await request.get(
+		'/video/getFirstVideo',
+		{
+			params:{courseId:course.courseId}
+		}
+	).then(res => {
+		if (res.code == '200'){
+			videoUrl.value = res.data
+			console.log(videoUrl)
+		}
+	})
+}
+async function go(){
+	if (flag != 'my'){
+			router.push({
+				path:'/base/buyCourseDetail',
+				query:{
+					courseId:course.courseId,
+					courseTitle:course.courseTitle,
+					courseOutline:course.courseOutline,
+					coursePrice:course.coursePrice,
+					courseOrder:course.courseOrder,
+					tags:course.tags,
+					userName:course.userName,
+					userAvatarUrl:course.userAvatarUrl,
+					teacherDescribe:course.teacherDescribe,
+					teacherRateCount:course.teacherRateCount,
+					teacherRate:course.teacherRate
+				}
+			})
 	}else{
-		router.push('/base/playCourseVideo')
+		await findFirstVideo()
+		router.push({
+			path:'/base/playCourseVideo',
+			query:{
+				courseId:course.courseId,
+				courseTitle:course.courseTitle,
+				courseOutline:course.courseOutline,
+				userName:course.userName,
+				userAvatarUrl:course.userAvatarUrl,
+				videoUrl:videoUrl.value,
+			}
+		})
 	}
 }
 
@@ -22,24 +59,23 @@ function go(){
 
 <template>
 <div class="card-box" @click="go">
-		<div class="title">笔试系统班图书大礼包：2025国考/2024广东省考</div>
-		<div class="subtitle">重难点夯实 刷题冲刺至考前</div>
+		<div class="title">{{ course.courseTitle }}</div>
+		<div class="subtitle">{{ course.courseOutline }}</div>
 		<div class="tags">
-        <el-tag class="tag">广东本地师资讲解</el-tag>
-        <el-tag class="tag">广东本地师资讲解</el-tag>
+        <el-tag class="tag" v-for="tag in course.tags">{{ tag }}</el-tag>
 		</div>
 		<div class="mid">
 			<div class="teacher">
-          <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"/>
-          <div class="name">雷军</div>
+          <el-avatar :src="course.userAvatarUrl"/>
+          <div class="name">{{ course.userName }}</div>
       </div>
-      <div class="money" v-if="flag!='my'">
+      <div class="money" v-if="flag != 'my'">
           <i class="iconfont money-icon">&#xe66b;</i>
-          <div>999</div>
+          <div>{{ course.coursePrice }}</div>
       </div>
 		</div>
     <el-divider  class="divider"/>
-    <div class="order-num">3103人购买</div>
+    <div class="order-num">{{ course.courseOrder }}人购买</div>
 </div>
 </template>
 

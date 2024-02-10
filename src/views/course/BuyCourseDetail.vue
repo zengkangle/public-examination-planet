@@ -1,67 +1,91 @@
 <script setup lang="ts">
-
 import TeacherIntroduceCard from "@/components/TeacherIntroduceCard.vue";
+import request from "@/utils/request";
+import {onBeforeMount, ref} from "vue";
+import {useUserStore} from "@/store/user";
+import {storeToRefs} from "pinia";
+import {ElMessage} from "element-plus";
+
+const userStore = useUserStore()
+const {userId} = storeToRefs(userStore)
+const {courseId,coursePrice,courseTitle} = defineProps(['courseId','courseTitle','courseOutline','tags','userAvatarUrl','userName','coursePrice','courseOrder','teacherDescribe','teacherRateCount','teacherRate'])
+
+const videoList = ref([])
+function initVideoList(){
+    request.get(
+        '/video/getCourseVideoList',
+      {
+        params:{courseId:courseId}
+      }
+    ).then(res => {
+      if (res.code == '200'){
+        videoList.value = res.data
+      }
+    })
+}
+onBeforeMount(() => {
+  initVideoList()
+})
+
+
+const order = ref({
+  userId:userId.value,
+  orderType:"course",
+  courseId:courseId,
+  orderName:courseTitle,
+  orderPrice:coursePrice,
+})
+function buy(){
+  request.post(
+    '/order/createOrder',
+    order.value
+  ).then(res => {
+    if (res.code == '200'){
+      if (res.data.orderStatus == '已支付'){
+        ElMessage({
+          message: '你已经拥有此课程，无需购买，请在我的课程中查看！',
+          type:'warning',
+          showClose: true,
+        })
+      }else {
+        window.open("http://localhost:8009/alipay/pay?orderId="+res.data.orderId);
+      }
+    }
+  })
+}
+
 </script>
 
 <template>
 	<div class="main">
       <div class="header">
           <div class="left">
-              <div class="title">笔试系统班图书大礼包：2025国考/2024广东省考</div>
-              <div class="subtitle">重难点夯实 刷题冲刺至考前</div>
+              <div class="title">{{ courseTitle }}</div>
+              <div class="subtitle">{{ courseOutline }}</div>
               <div class="tags">
-                  <el-tag class="tag">广东本地师资讲解</el-tag>
-                  <el-tag class="tag">广东本地师资讲解</el-tag>
+                  <el-tag class="tag" v-for="tag in tags">{{ tag }}</el-tag>
               </div>
               <div class="teacher">
-                  <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"/>
-                  <div class="name">雷军</div>
+                  <el-avatar :src="userAvatarUrl"/>
+                  <div class="name">{{ userName }}</div>
               </div>
           </div>
           <el-divider direction="vertical" class="divider"></el-divider>
           <div class="right">
               <div class="money">
                   <i class="iconfont money-icon">&#xe66b;</i>
-                  <div class="money-number">999</div>
+                  <div class="money-number">{{ coursePrice }}</div>
               </div>
-              <div class="order-num">3103人已购买</div>
-              <div class="buy-button">立即购买</div>
+              <div class="order-num">{{ courseOrder }}人已购买</div>
+              <div class="buy-button" @click="buy">立即购买</div>
           </div>
       </div>
       <div class="course-list">
           <div class="course-list-title">课程表</div>
           <div class="course-video">
-              <div class="course-video-head">
+              <div class="course-video-head" v-for="video in videoList" :key="video.videoId">
                   <el-divider direction="vertical" class="divider2"></el-divider>
-                  <div class="video-title">韩涛 - 2024广东省考公告解读&招录分析</div>
-              </div>
-              <el-divider class="divider3"></el-divider>
-          </div>
-          <div class="course-video">
-              <div class="course-video-head">
-                  <el-divider direction="vertical" class="divider2"></el-divider>
-                  <div class="video-title">韩涛 - 2024广东省考公告解读&招录分析</div>
-              </div>
-              <el-divider class="divider3"></el-divider>
-          </div>
-          <div class="course-video">
-              <div class="course-video-head">
-                  <el-divider direction="vertical" class="divider2"></el-divider>
-                  <div class="video-title">韩涛 - 2024广东省考公告解读&招录分析</div>
-              </div>
-              <el-divider class="divider3"></el-divider>
-          </div>
-          <div class="course-video">
-              <div class="course-video-head">
-                  <el-divider direction="vertical" class="divider2"></el-divider>
-                  <div class="video-title">韩涛 - 2024广东省考公告解读&招录分析</div>
-              </div>
-              <el-divider class="divider3"></el-divider>
-          </div>
-          <div class="course-video">
-              <div class="course-video-head">
-                  <el-divider direction="vertical" class="divider2"></el-divider>
-                  <div class="video-title">韩涛 - 2024广东省考公告解读&招录分析</div>
+                  <div class="video-title">{{ video.videoTitle }}</div>
               </div>
               <el-divider class="divider3"></el-divider>
           </div>
@@ -69,7 +93,7 @@ import TeacherIntroduceCard from "@/components/TeacherIntroduceCard.vue";
       </div>
       <div class="teacher-introduce">
         <div class="teacher-introduce-title">老师介绍</div>
-        <TeacherIntroduceCard/>
+        <TeacherIntroduceCard :userName="userName" :userAvatarUrl="userAvatarUrl" :teacherDescribe="teacherDescribe" :teacherRateCount="teacherRateCount" :teacherRate="teacherRate"/>
       </div>
   </div>
 </template>

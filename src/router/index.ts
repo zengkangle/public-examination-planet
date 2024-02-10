@@ -94,7 +94,10 @@ const router = createRouter({
         },
         {
           path: 'buyCourseDetail',
-          component: BuyCourseDetail
+          component: BuyCourseDetail,
+          props(route){
+            return route.query
+          }
         },
         {
           path: 'live',
@@ -160,7 +163,10 @@ const router = createRouter({
         },
         {
           path: 'playCourseVideo',
-          component: PlayCourseVideo
+          component: PlayCourseVideo,
+          props(route){
+            return route.query
+          }
         },
         {
           path: 'teacherDetail',

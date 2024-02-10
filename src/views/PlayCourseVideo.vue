@@ -1,9 +1,22 @@
 <script setup lang="ts">
-import { WPlayer } from 'vue-wplayer';
-import {ref} from "vue";
+import {onBeforeMount, ref, watch} from "vue";
 import {Notebook, User} from "@element-plus/icons-vue";
+import request from "@/utils/request";
+import {WPlayer} from "vue-wplayer";
+import {onBeforeRouteUpdate, useRouter} from "vue-router";
 
-const options = {
+const {courseId,courseTitle,courseOutline,userName,userAvatarUrl,videoUrl} = defineProps(['courseId','courseTitle','courseOutline','userName','userAvatarUrl','videoUrl'])
+
+function formatterPage(row){
+	return 'P'+row.coursePage
+}
+
+onBeforeMount(() => {
+	options.value.resource = videoUrl
+})
+
+const currentRow = ref()
+const options = ref({
 	resource: "http://localhost:8009/files/playVideo/a886263d5e6242ee9bfa0106ec4af47b.mp4",
 	theme: "#40AEED",
 	danmaku:{
@@ -12,37 +25,58 @@ const options = {
 		data: [],
 		send: newsScrolling,
 	}
-}
+})
 function newsScrolling(value){
 	console.log('@@@',value)
 }
+/**
+ * 获取视频列表
+ */
+const videoList = ref([])
+function getVideoList(){
+	request.get(
+		'/video/getCourseVideoList',
+		{
+			params:{courseId:courseId}
+		}
+	).then(res => {
+		if (res.code == '200'){
+			videoList.value = res.data
+		}
+	})
+}
+onBeforeMount(() => {
+	getVideoList()
+})
 
-const currentRow = ref()
-
-const courseList = ref([
-	{
-		videoIndex: 'p1',
-		videoName:'廉才浩 - 【判断】大纲解读&备考指导'
-	},
-	{
-		videoIndex: 'p2',
-		videoName:'廉才浩 - 【判断】大纲解读&备考指导'
-	},
-	{
-		videoIndex: 'p3',
-		videoName:'廉才浩 - 【判断】大纲解读&备考指导'
-	},
-])
+const router = useRouter()
 const handleCurrentChange = (val) => {
-	currentRow.value = val
+	router.push({
+		path:'/base/playCourseVideo',
+		query:{
+			courseId:courseId,
+			courseTitle:courseTitle,
+			courseOutline:courseOutline,
+			userName:userName,
+			userAvatarUrl:userAvatarUrl,
+			videoUrl:val.videoUrl,
+		}
+	})
+}
+
+const tableRowClassName = (scope) => {
+	if (scope.row.videoUrl == options.value.resource){
+		return 'success-row'
+	}
+	return ''
 }
 </script>
 
 <template>
 	<div class="main">
 		<div class="left">
-				<div class="title">笔试系统班图书大礼包：2025国考/2024广东省考</div>
-				<div class="subtitle">重难点夯实 刷题冲刺至考前</div>
+				<div class="title">{{ courseTitle }}</div>
+				<div class="subtitle">{{ courseOutline }}</div>
         <div class="container">
             <div class="player-container">
                 <w-player class="player" :options="options" :danmaku-key="0"></w-player>
@@ -52,8 +86,8 @@ const handleCurrentChange = (val) => {
 		<div class="right">
 		<div class="right-header">
         <div class="teacher">
-            <el-avatar size="large" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"/>
-            <div class="name">雷军</div>
+            <el-avatar size="large" :src="userAvatarUrl"/>
+            <div class="name">{{ userName }}</div>
         </div>
         <div class="rate">
             <el-button type="primary" :icon="Notebook" >课程评价</el-button>
@@ -64,23 +98,24 @@ const handleCurrentChange = (val) => {
             <el-tab-pane label="视频选集">
                 <el-table
                         ref="singleTableRef"
-                        :data="courseList"
-                        highlight-current-row
+                        :data="videoList"
                         height="522px"
                         style="width: 370px"
                         @current-change="handleCurrentChange"
+                        :row-class-name="tableRowClassName"
                 >
-                    <el-table-column property="videoIndex" width="40" />
-                    <el-table-column property="videoName"  />
+                    <el-table-column prop="videoIndex" :formatter="formatterPage" width="50" />
+                    <el-table-column prop="videoTitle"  />
                 </el-table>
             </el-tab-pane>
             <el-tab-pane label="弹幕列表">
                 <el-table
                         ref="singleTableRef"
-                        :data="courseList"
+                        :data="videoList"
                         highlight-current-row
                         height="400px"
                         style="width: 370px"
+                        :row-class-name="tableRowClassName"
                         @current-change="handleCurrentChange"
                 >
                     <el-table-column property="videoIndex" label="时间" width="60" />
@@ -100,6 +135,7 @@ const handleCurrentChange = (val) => {
 	background-color: #fff;
 	display: flex;
 }
+
 .title{
 	font-size: 22px;
 	font-weight: 500;
@@ -140,5 +176,13 @@ const handleCurrentChange = (val) => {
 }
 .tabs{
 	margin-top: 8px;
+}
+</style>
+
+<style>
+.el-table .success-row {
+    --el-table-tr-bg-color: var(--el-color-success-light-9);
+    --el-table-text-color: #4C7CFE;
+    color: #4C7CFE;
 }
 </style>
