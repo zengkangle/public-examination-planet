@@ -58,6 +58,7 @@ function unPass(scope){
     tableScope.value.videoStatus = '不通过'
     checkVideo()
 }
+
 /**
  * 分页+无限滚动
  */
@@ -127,7 +128,7 @@ function getUserListScroll(){
 
         <el-dialog v-model="dialogViewVisible" title="审核视频">
             <div class="player-container">
-                <w-player class="player" :options="options" :danmaku-key="0"></w-player>
+                <w-player class="player" :options="options" :danmakuKey="2"></w-player>
             </div>
         </el-dialog>
     </div>

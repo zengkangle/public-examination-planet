@@ -1,22 +1,69 @@
 <script setup lang="ts">
-
 import {WPlayer} from "vue-wplayer";
 import flvjs from 'flv.js'
-import {ref, nextTick, onMounted} from "vue";
+import {ref, nextTick, onMounted, onBeforeUnmount, onBeforeMount} from "vue";
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
+import {useUserStore} from "@/store/user";
+import {storeToRefs} from "pinia";
+import {ElNotification} from "element-plus";
+import request from "@/utils/request";
 
-const ws = new WebSocket('ws://localhost:8009/chat')
+
+
+const {liveId,userName,resource} = defineProps(['liveId','liveTitle','userName','userAvatarUrl','resource'])
+const userStore = useUserStore()
+const {userId,userName:uName} = storeToRefs(userStore)
+
+/**
+ * websocket聊天室
+ */
+const ws = new WebSocket('ws://localhost:8009/chat/'+liveId+'/'+userId.value+'/'+uName.value)
+const chatMsg = ref([])
+let onlineAmount = ref(0)
 ws.onopen = function (){
     console.log('链接成功！')
 }
-ws.onmessage = function (MessageEvent){
-    console.log(MessageEvent)
+ws.onmessage = async function (MessageEvent){
     console.log(JSON.parse(MessageEvent.data))
+    if (JSON.parse(MessageEvent.data).messageType === 'close'){
+        onlineAmount.value = JSON.parse(MessageEvent.data).onlineAmount
+    }else {
+        if (JSON.parse(MessageEvent.data).messageType === 'system'){
+            onlineAmount.value = JSON.parse(MessageEvent.data).onlineAmount
+        }
+        chatMsg.value.push(JSON.parse(MessageEvent.data))
+        count.value++
+        await setScrollToBottom()
+    }
+}
+onBeforeUnmount(() => {
+    ws.close()
+})
+
+/**
+ * 发送聊天内容
+ */
+const sendMsg = ref({
+    liveId:liveId,
+    userName:uName.value,
+    msgContent:'',
+})
+function send() {
+    ElNotification({
+        message: '发送成功！',
+        type: 'success',
+        offset: 50,
+        duration: 1200,
+    })
+    sendMsg.value.msgContent = ''
 }
 
+/**
+ * 直播视频配置
+ */
 const options = {
-	resource: "http://192.168.159.132:8080/live/liveroom_94916.flv",
+	resource: resource,
 	type: "custom",
 	customType: function (player: HTMLVideoElement, url: string) {
 		const flv = flvjs.createPlayer({
@@ -28,42 +75,31 @@ const options = {
 	},
 }
 
-let text = ref()
-const count = ref(1) // 计数器
-const scrollbarRef = ref() // 滚动条实例
-
 /**
  * 控制滚动条滚动到容器的底部
  */
+const count = ref(1) // 计数器
+const scrollbarRef = ref() // 滚动条实例
 async function setScrollToBottom() {
-	// nextTick 以等待 DOM 更新完成
+    // nextTick 以等待 DOM 更新完成
 	await nextTick()
 	const max = 31 * count.value
 	scrollbarRef.value.setScrollTop(max)
 }
 
-
-const liveChatMsg =ref({
-    content:'前端发了消息哇！'
-})
-async function send() {
-    ws.send(JSON.stringify(liveChatMsg.value))
-	count.value++
-	await setScrollToBottom()
-}
-
-let emoji = ref()
-
-onMounted(() => {
-	document.addEventListener("click",function (event){
-	  if (event.target !== emoji.value){
-	      emojiSwitch.value = false;
-	  }
-	})
-})
-
+/**
+ * emoji表情
+ */
 let emojiSwitch = ref(false)
+let emoji = ref()
 let liveInput = ref()
+onMounted(() => {
+    document.addEventListener("click",function (event){
+        if (event.target !== emoji.value){
+            emojiSwitch.value = false;
+        }
+    })
+})
 function onSelectEmoji(emoji) {
     let input:HTMLInputElement = liveInput.value.textarea
     let startPos = input.selectionStart
@@ -73,7 +109,7 @@ function onSelectEmoji(emoji) {
     input.focus()
     input.selectionStart = startPos + emoji.i.length
     input.selectionEnd = startPos + emoji.i.length
-
+    sendMsg.value.msgContent =resultText
 }
 
 
@@ -85,10 +121,10 @@ function onSelectEmoji(emoji) {
     <div class="live-room">
         <div class="container">
             <div class="container-header">
-                <el-avatar size="large" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"/>
+                <el-avatar size="large" :src="userAvatarUrl"/>
                 <div class="container-header-info">
-                    <div class="name">雷军</div>
-                    <div class="title">职测理论-资料1</div>
+                    <div class="name">{{ userName }}</div>
+                    <div class="title">{{ liveTitle }}</div>
                 </div>
             </div>
             <div class="player-container">
@@ -97,17 +133,17 @@ function onSelectEmoji(emoji) {
             <div class="container-footer"></div>
         </div>
         <div class="chat-area">
-            <div class="chat-area-header">直播间人数：6</div>
+            <div class="chat-area-header">直播间人数：{{onlineAmount}}</div>
             <div>
                 <el-scrollbar ref="scrollbarRef" max-height="548px" always>
                     <div class="chat-container">
-                        <div class="dialog" ref="innerRef" v-for="item in count">
-                            <div class="user-dialog">
-                                <div class="user-dialog-name">雷军：</div>
-                                <div class="user-dialog-content">😀捏埃个寄啊!!!66</div>
+                        <div class="dialog" ref="innerRef" v-for="chat in chatMsg">
+                            <div class="user-dialog" v-if="chat.messageType === 'user' ">
+                                <span class="user-dialog-name">{{ chat.userName }}：</span>
+                                <span class="user-dialog-content">{{ chat.messageContent }}</span>
                             </div>
-                            <div class="system-dialog" v-if="false">
-                                <div class="system-dialog-name">雷军加入了直播间~</div>
+                            <div class="system-dialog" v-if="chat.messageType === 'system' ">
+                                <div class="system-dialog-name">{{ chat.userName }}加入了直播间~</div>
                             </div>
                         </div>
                     </div>
@@ -143,7 +179,7 @@ function onSelectEmoji(emoji) {
                                            'flags']"
                 />
                 <el-input
-                        v-model="text"
+                        v-model="sendMsg.msgContent"
                         maxlength="20"
                         placeholder="这里输入聊天内容"
                         show-word-limit
@@ -162,7 +198,7 @@ function onSelectEmoji(emoji) {
     padding-left: 250px;
     display: flex;
     background-image: url("../assets/bg.png");
-    height: 95vh;
+    height: 94.5vh;
 }
 
 .container {
@@ -234,8 +270,8 @@ function onSelectEmoji(emoji) {
 }
 
 .user-dialog {
-    display: flex;
     padding: 5px;
+    word-break: break-all;
 }
 
 .user-dialog-name {

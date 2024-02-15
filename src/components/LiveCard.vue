@@ -1,5 +1,5 @@
 <script setup lang="ts">
-
+defineProps(['live'])
 </script>
 
 <template>
@@ -13,19 +13,19 @@
 					</div>
 			</div>
 			<div class="card-body">
-					<div class="live-title">职测理论-资料1</div>
+					<div class="live-title">{{ live.liveTitle }}</div>
 					<div class="tags">
-						<el-tag class="tag">全国</el-tag>
-						<el-tag class="tag">事业单位综合岗</el-tag>
+						<el-tag class="tag" v-for="tag in live.tags">{{ tag }}</el-tag>
 					</div>
 			</div>
 			<el-divider/>
 			<div class="card-footer">
 					<div class="teacher">
-              <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"/>
-              <div class="name">雷军</div>
+              <el-avatar :src="live.userAvatarUrl"/>
+              <div class="name">{{ live.userName }}</div>
 					</div>
-					<div class="condition">VIP</div>
+					<div class="condition-vip" v-if="live.liveType === 'vip'">VIP</div>
+          <div class="condition-free" v-if="live.liveType === '公开试听课'">试听课</div>
 			</div>
 	</div>
 </template>
@@ -131,11 +131,18 @@
 margin-left: 10px;
 	color: #8C9095;
 }
-.condition{
+.condition-vip{
 	color: red;
 	font-weight: 600;
 	position: relative;
 	left: 210px;
 	top: 20px;
+}
+.condition-free{
+    color: #4C7CFE;
+    font-weight: 600;
+    position: relative;
+    left: 210px;
+    top: 20px;
 }
 </style>

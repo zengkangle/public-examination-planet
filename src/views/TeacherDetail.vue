@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {onBeforeMount, ref} from "vue";
+import {computed, onBeforeMount, ref} from "vue";
 import StudentRate from "@/components/StudentRate.vue";
 import request from "@/utils/request";
 
@@ -20,11 +20,44 @@ function getTeacherInfo(){
 onBeforeMount(() => {
   getTeacherInfo()
 })
+
+/**
+ * 分页+无限滚动
+ */
+const commentList = ref([])
+const pageMsg = ref({
+  currentPage:0,
+  pageSize:10,
+  total:null,
+  commentType:'teacher',
+  teacherId:teacherId,
+  courseId:0
+})
+let disabled = computed(() => {
+  return commentList.value.length == pageMsg.value.total;
+})
+const load = () => {
+  pageMsg.value.currentPage++
+  getUserListScroll()
+}
+function getUserListScroll(){
+  request.get(
+    "/comment/getRateByPage",
+    {
+      params:pageMsg.value
+    }
+  ).then(res => {
+    if (res.code === '200'){
+      commentList.value = commentList.value.concat(res.data.records)
+      pageMsg.value.total = res.data.total
+    }
+  })
+}
 </script>
 
 <template>
 	<div class="main">
-		<div class="teacher-introduce-box">
+		<div class="teacher-introduce-box" v-infinite-scroll="load" :infinite-scroll-disabled="disabled">
         <div class="title-box">
             <el-divider direction="vertical" class="divider"></el-divider>
             <div class="title">师资介绍</div>
@@ -60,9 +93,7 @@ onBeforeMount(() => {
             <el-divider direction="vertical" class="divider"></el-divider>
             <div class="title">学生评价</div>
           </div>
-          <StudentRate/>
-          <StudentRate/>
-          <StudentRate/>
+          <StudentRate v-for="comment in commentList" :key="comment.commentId" :comment="comment"/>
         </div>
     </div>
 	</div>

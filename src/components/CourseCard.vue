@@ -7,7 +7,7 @@ const {course,flag} = defineProps(['course','flag'])
 
 const router = useRouter()
 
-let videoUrl = ref('')
+let firstVideo = ref({})
 async function findFirstVideo(){
 	await request.get(
 		'/video/getFirstVideo',
@@ -16,8 +16,7 @@ async function findFirstVideo(){
 		}
 	).then(res => {
 		if (res.code == '200'){
-			videoUrl.value = res.data
-			console.log(videoUrl)
+			firstVideo.value = res.data
 		}
 	})
 }
@@ -47,9 +46,11 @@ async function go(){
 				courseId:course.courseId,
 				courseTitle:course.courseTitle,
 				courseOutline:course.courseOutline,
+				teacherId:course.teacherId,
 				userName:course.userName,
 				userAvatarUrl:course.userAvatarUrl,
-				videoUrl:videoUrl.value,
+				videoId:firstVideo.value.videoId,
+				videoUrl:firstVideo.value.videoUrl,
 			}
 		})
 	}

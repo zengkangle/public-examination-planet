@@ -3,7 +3,7 @@ import '//at.alicdn.com/t/c/font_3294066_5m9urj9rq4a.js'
 import {ref, onMounted, onBeforeMount, watch, computed} from "vue";
 import EmojiPicker from "vue3-emoji-picker";
 import CommentCard from "@/components/CommentCard.vue";
-import request from "@/utils/request.js"
+import request from "@/utils/request"
 import * as dayjs from 'dayjs'
 import {ElMessage, ElNotification} from "element-plus";
 import {useUserStore} from "@/store/user"

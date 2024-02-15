@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import TeacherIntroduceCard from "@/components/TeacherIntroduceCard.vue";
 import request from "@/utils/request";
-import {onBeforeMount, ref} from "vue";
+import {computed, onBeforeMount, ref} from "vue";
 import {useUserStore} from "@/store/user";
 import {storeToRefs} from "pinia";
 import {ElMessage} from "element-plus";
+import StudentRate from "@/components/StudentRate.vue";
 
 const userStore = useUserStore()
 const {userId} = storeToRefs(userStore)
@@ -53,11 +54,42 @@ function buy(){
     }
   })
 }
-
+/**
+ * 分页+无限滚动
+ */
+const commentList = ref([])
+const pageMsg = ref({
+  currentPage:0,
+  pageSize:10,
+  total:null,
+  commentType:'course',
+  teacherId:0,
+  courseId:courseId
+})
+let disabled = computed(() => {
+  return commentList.value.length == pageMsg.value.total;
+})
+const load = () => {
+  pageMsg.value.currentPage++
+  getUserListScroll()
+}
+function getUserListScroll(){
+  request.get(
+    "/comment/getRateByPage",
+    {
+      params:pageMsg.value
+    }
+  ).then(res => {
+    if (res.code === '200'){
+      commentList.value = commentList.value.concat(res.data.records)
+      pageMsg.value.total = res.data.total
+    }
+  })
+}
 </script>
 
 <template>
-	<div class="main">
+	<div class="main" v-infinite-scroll="load" :infinite-scroll-disabled="disabled">
       <div class="header">
           <div class="left">
               <div class="title">{{ courseTitle }}</div>
@@ -94,7 +126,12 @@ function buy(){
       <div class="teacher-introduce">
         <div class="teacher-introduce-title">老师介绍</div>
         <TeacherIntroduceCard :userName="userName" :userAvatarUrl="userAvatarUrl" :teacherDescribe="teacherDescribe" :teacherRateCount="teacherRateCount" :teacherRate="teacherRate"/>
+        <el-divider class="divider4"></el-divider>
       </div>
+    <div class="teacher-comment">
+      <div class="teacher-comment-title">学生评价</div>
+      <StudentRate v-for="comment in commentList" :key="comment.commentId" :comment="comment" style="background-color: #fff"/>
+    </div>
   </div>
 </template>
 
@@ -204,7 +241,7 @@ function buy(){
     margin-top: 10px;
     padding: 40px;
 }
-.course-list-title,.teacher-introduce-title{
+.course-list-title,.teacher-introduce-title,.teacher-comment-title{
     color: #3D464F;
     margin-bottom: 24px;
 }
@@ -231,5 +268,10 @@ function buy(){
     background-color: #fff;
     margin-top: -60px;
     padding: 40px;
+}
+.teacher-comment{
+  background-color: #fff;
+  margin-top: -60px;
+  padding: 40px;
 }
 </style>
