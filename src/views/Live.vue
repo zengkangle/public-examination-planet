@@ -123,7 +123,9 @@ function getLiveListScroll(){
         </div>
         <div class="live-card-list">
             <LiveCard @click="toLiveRoom(live)" v-for="live in liveList" :key="live.liveId" :live="live"/>
+            <div v-if="liveList.length === 0" style="width: 100%;text-align: center;font-size: 30px;margin-top: 60px">暂无教师直播喔~</div>
         </div>
+
     </div>
     <el-dialog
       v-model="vipDialogVisible"

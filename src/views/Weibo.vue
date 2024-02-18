@@ -4,11 +4,12 @@ import type { UploadProps, UploadUserFile } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import EmojiPicker from 'vue3-emoji-picker'
 import 'vue3-emoji-picker/css'
-import TalkCard from "@/components/TalkCard.vue";
+import TalkCard from "@/components/WeiboCard.vue";
 import {storeToRefs} from "pinia"
 import {useUserStore} from "@/store/user"
 import {ElMessage, ElNotification} from "element-plus";
 import request from "@/utils/request";
+import WeiboCard from "@/components/WeiboCard.vue";
 
 /**
  * 获取用户id信息
@@ -197,7 +198,7 @@ function getWeiboListScroll(){
           </div>
       </div>
       <div class="talk-list" v-infinite-scroll="load" :infinite-scroll-disabled="disabled">
-        <talk-card v-for="weibo in weiboList"  :weibo="weibo"/>
+        <WeiboCard v-for="weibo in weiboList"  :weibo="weibo"/>
       </div>
 	</div>
 </template>

@@ -71,10 +71,11 @@ declare module 'vue' {
     SideBarForTeacher: typeof import('./src/components/SideBarForTeacher.vue')['default']
     StudentRate: typeof import('./src/components/StudentRate.vue')['default']
     SubReply: typeof import('./src/components/SubReply.vue')['default']
-    TalkCard: typeof import('./src/components/TalkCard.vue')['default']
+    TalkCard: typeof import('./src/components/WeiboCard.vue')['default']
     TeacherCard: typeof import('./src/components/TeacherCard.vue')['default']
     TeacherIntroduceCard: typeof import('./src/components/TeacherIntroduceCard.vue')['default']
     TheWelcome: typeof import('./src/components/TheWelcome.vue')['default']
+    WeiboCard: typeof import('./src/components/WeiboCard.vue')['default']
     WelcomeItem: typeof import('./src/components/WelcomeItem.vue')['default']
   }
   export interface ComponentCustomProperties {

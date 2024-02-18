@@ -47,6 +47,7 @@ function getCourseListScroll(){
 <template>
     <div class="card-list" v-infinite-scroll="load" :infinite-scroll-disabled="disabled">
         <CourseCard class="card" :flag="flag" v-for="course in myCourseList" :key="course.courseId" :course="course"/>
+        <div v-if="myCourseList.length===0" style="font-size: 27px;width: 100%;text-align: center;">抱歉,此列表暂无课程~</div>
     </div>
 </template>
 

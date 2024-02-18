@@ -1,15 +1,32 @@
 <script setup lang="ts">
+import request from "@/utils/request";
 
+import {onBeforeMount, ref} from "vue";
+
+const {articleId} = defineProps(['articleId'])
+const articleInfo = ref({})
+function getArticleInfo(){
+	request.get(
+		'/article/getArticleInfo',
+		{
+			params:{articleId:articleId}
+		}
+	).then(res => {
+		if (res.code === '200'){
+			articleInfo.value = res.data
+		}
+	})
+}
+onBeforeMount(() => {
+	getArticleInfo()
+})
 </script>
 
 <template>
 	<div class="main">
       <div class="knowledge-box">
-          <div class="title">如何在言语二选一中锁定正确答案</div>
-          <div>
-		          在各省份行测考试中，言语理解与表达一直都是非常重要的部分，题量占比较大，历来都属于“兵家必争之地”。对于言语题，我们都知道分析文段很重要，但是有时会出现分析完文段，找到文段重点，却依旧选不出答案的情况。大家会觉得总有两个选项很难取舍，自己纠结半天，最后“巧妙”避开正确答案。这是因为出题人会精心设置一些“陷阱”，有些错误选项极具迷惑性，比如一些选项的描述与文段极为相似却会在核心话题等关键点出现轻微偏差；有些词语语义看似相近，实则存在差异……这时候就需要我们进行选项的对比。何为对比选项呢？有一个很重要的解题思维就是对比择优。那究竟如何对比？又要如何择优？接下来就让我们一起进行梳理。本文将介绍五种可以帮助大家锁定正确答案的方法。
-              在各省份行测考试中，言语理解与表达一直都是非常重要的部分，题量占比较大，历来都属于“兵家必争之地”。对于言语题，我们都知道分析文段很重要，但是有时会出现分析完文段，找到文段重点，却依旧选不出答案的情况。大家会觉得总有两个选项很难取舍，自己纠结半天，最后“巧妙”避开正确答案。这是因为出题人会精心设置一些“陷阱”，有些错误选项极具迷惑性，比如一些选项的描述与文段极为相似却会在核心话题等关键点出现轻微偏差；有些词语语义看似相近，实则存在差异……这时候就需要我们进行选项的对比。何为对比选项呢？有一个很重要的解题思维就是对比择优。那究竟如何对比？又要如何择优？接下来就让我们一起进行梳理。本文将介绍五种可以帮助大家锁定正确答案的方法。
-          </div>
+          <div class="title">{{ articleInfo.articleTitle }}</div>
+          <div>{{ articleInfo.articleContent }}</div>
       </div>
   </div>
 </template>

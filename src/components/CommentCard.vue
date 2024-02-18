@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref, onBeforeMount, watch} from "vue";
+import {ref, onBeforeMount} from "vue";
 import ReplyCard from "@/components/ReplyCard.vue";
 import ReplyDialog from "@/components/ReplyDialog.vue";
 import * as dayjs from 'dayjs'
@@ -9,24 +9,6 @@ import emitter from "@/utils/emitter";
 const {comment} = defineProps(['comment'])
 let replyDialogVisible = ref(false)
 let replyListDialogVisible = ref(false)
-
-const userMsg = ref({})
-function getUserMsg(){
-	request.get(
-		'/user/getUserMsg',
-		{
-			params: {userId:comment.userId,}
-		}
-	).then(res => {
-		if (res.code === '200'){
-			userMsg.value = res.data
-		}
-	})
-}
-onBeforeMount(() => {
-	getUserMsg()
-})
-
 
 let recentReplyUserName = ref("")
 function getRecentReplyUserName(){
@@ -55,11 +37,11 @@ emitter.on('update-recent-reply-user-name',() => {
 
 <template>
 	<div class="comment-card-box">
-      <el-avatar :src="userMsg.userAvatarUrl" :size="40"/>
+      <el-avatar :src="comment.userAvatarUrl" :size="40"/>
       <div class="comment-card-container">
         <div class="comment-card-content">
-		          <span class="comment-card-content-name">{{ userMsg.userName }}</span>
-		          <svg class="icon comment-vip-icon" aria-hidden="true" v-if="userMsg.userLevel === 'vip'"><use xlink:href="#icon-vip"></use></svg>
+		          <span class="comment-card-content-name">{{ comment.userName }}</span>
+		          <svg class="icon comment-vip-icon" aria-hidden="true" v-if="comment.userLevel === 'vip'"><use xlink:href="#icon-vip"></use></svg>
 		          <span>：{{comment.weiboCommentContent}}</span>
         </div>
         <div class="comment-card-footer">
@@ -76,12 +58,12 @@ emitter.on('update-recent-reply-user-name',() => {
       </div>
 	</div>
 
-	<el-dialog v-model="replyDialogVisible" :title="'回复@'+userMsg.userName" align-center class="reply-dialog" width="540px" style="--el-dialog-padding-primary:20px">
+	<el-dialog v-model="replyDialogVisible" :title="'回复@'+comment.userName" align-center class="reply-dialog" width="540px" style="--el-dialog-padding-primary:20px">
 		<ReplyDialog :weiboCommentId="comment.weiboCommentId" @close-dialog="replyDialogVisible = false"/>
 	</el-dialog>
 
 	<el-dialog v-model="replyListDialogVisible" :title="comment.weiboCommentReplyAmount+'条回复'" align-center class="reply-dialog" width="540px" style="--el-dialog-padding-primary:20px">
-		<ReplyCard :comment="comment" :userMsg="userMsg"/>
+		<ReplyCard :comment="comment"/>
 	</el-dialog>
 
 </template>

@@ -2,6 +2,7 @@
 import {ref} from "vue";
 import "@/assets/icon/iconfont.js"
 import KnowledgeNavgation from "@/components/KnowledgeNavgation.vue";
+
 let imgList = ref([{id:'1',url:'https://nodestatic.fbstatic.cn/pan/downloads/b7c1e78d7559c7851ea9e2e7949373b6.png'},{id:'2',url:'https://nodestatic.fbstatic.cn/pan/downloads/25a8da9f5d6c189063b4e6934c32f121.png'}])
 </script>
 <template>
@@ -22,11 +23,12 @@ let imgList = ref([{id:'1',url:'https://nodestatic.fbstatic.cn/pan/downloads/b7c
     </div>
     <el-divider></el-divider>
     <div class="knowledge-area">
-
-      <KnowledgeNavgation class="knowledge-nav"/>
-      <KnowledgeNavgation class="knowledge-nav"/>
-      <KnowledgeNavgation class="knowledge-nav"/>
-      <KnowledgeNavgation class="knowledge-nav"/>
+      <KnowledgeNavgation class="knowledge-nav" :topic="'公考笔试'" :imgUrl="'http://localhost:8009/files/imageDownload/5c63e6d83b944b9d8bda93615c7316ab.jpg'"/>
+      <KnowledgeNavgation class="knowledge-nav" :topic="'事业单位笔试'" :imgUrl="'http://localhost:8009/files/imageDownload/b4b0a2e8591043979564306559552366.png'"/>
+      <KnowledgeNavgation class="knowledge-nav" :topic="'常识零钱罐'" :imgUrl="'http://localhost:8009/files/imageDownload/6c74eef998a9454ba014abecd7721714.jpeg'"/>
+      <KnowledgeNavgation class="knowledge-nav" :topic="'申论揭秘'" :imgUrl="'http://localhost:8009/files/imageDownload/b2f627c74ea64de9a6aca6697b35e885.png'"/>
+      <KnowledgeNavgation class="knowledge-nav" :topic="'金词金句'" :imgUrl="'http://localhost:8009/files/imageDownload/b5012225ae2643d98b3b9b7573f97e39.png'"/>
+      <KnowledgeNavgation class="knowledge-nav" :topic="'行测老师帮帮忙'" :imgUrl="'http://localhost:8009/files/imageDownload/251983116ddd4a4295ff15b752fff784.png'"/>
     </div>
   </div>
 </template>

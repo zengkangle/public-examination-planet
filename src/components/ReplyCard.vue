@@ -5,7 +5,9 @@ import * as dayjs from 'dayjs'
 import request from "@/utils/request";
 import SubReply from "@/components/SubReply.vue";
 import emitter from "@/utils/emitter";
-const {comment,userMsg} = defineProps(['comment','userMsg'])
+
+
+const {comment} = defineProps(['comment','userMsg'])
 const load = () => {
 }
 let replyDialogVisible = ref(false)
@@ -38,12 +40,12 @@ emitter.on('update-reply-list',() => {
   <el-scrollbar always max-height="300px">
     <div class="reply-card-box">
       <div style="width: 40px">
-        <el-avatar :src="userMsg.userAvatarUrl" :size="40"/>
+        <el-avatar :src="comment.userAvatarUrl" :size="40"/>
       </div>
       <div class="reply-card-container">
         <div class="reply-card-content">
-          <span class="reply-card-content-name">{{ userMsg.userName }}</span>
-          <svg class="icon reply-vip-icon" aria-hidden="true" v-if="userMsg.userLevel === 'vip'"><use xlink:href="#icon-vip"></use></svg>
+          <span class="reply-card-content-name">{{ comment.userName }}</span>
+          <svg class="icon reply-vip-icon" aria-hidden="true" v-if="comment.userLevel === 'vip'"><use xlink:href="#icon-vip"></use></svg>
           <span>：{{comment.weiboCommentContent}}</span>
         </div>
         <div class="reply-card-footer">
@@ -59,7 +61,7 @@ emitter.on('update-reply-list',() => {
       </div>
     </div>
   </el-scrollbar>
-  <el-dialog v-model="replyDialogVisible" :title="'回复@'+userMsg.userName" align-center class="reply-dialog" width="540px" style="--el-dialog-padding-primary:20px">
+  <el-dialog v-model="replyDialogVisible" :title="'回复@'+comment.userName" align-center class="reply-dialog" width="540px" style="--el-dialog-padding-primary:20px">
     <ReplyDialog :isReply="true" :weiboCommentId="comment.weiboCommentId" @close-dialog="replyDialogVisible = false"/>
   </el-dialog>
 </template>

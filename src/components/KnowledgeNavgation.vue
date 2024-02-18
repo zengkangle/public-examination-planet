@@ -1,24 +1,40 @@
 <script setup lang="ts">
+import request from "@/utils/request"
+import {computed, onBeforeMount, ref} from "vue";
 
+const {topic} = defineProps(['topic','imgUrl'])
+
+const articleList = ref([{}])
+function getArticleListOfType(){
+	request.get(
+		'/article/getArticleListOfType',
+		{
+			params:{articleType:topic}
+		}
+	).then(res => {
+		if (res.code === '200'){
+			articleList.value = res.data
+		}
+	})
+}
+onBeforeMount(() => {
+	getArticleListOfType()
+})
 </script>
 
 <template>
 	<div class="nav">
 			<div class="title-area">
-					<div class="title">公考笔试</div>
+					<div class="title">{{ topic }}</div>
           <i class="iconfont arrow">&#xe606;</i>
 			</div>
 			<div class="blue-line"></div>
 			<div class="line"></div>
 			<div class="show-area">
-        <img src="https://hera.fbstatic.cn/439669142663168.jpg" alt="" class="img"/>
-        <routerLink to="/base/knowledge" class="show-text">如何在言语二选一中锁定正确答案</routerLink>
+        <img :src="imgUrl" alt="" class="img"/>
+        <routerLink :to="{path:'/base/knowledge',query:{articleId: articleList[0].articleId}}" class="show-text">{{ articleList[0].articleTitle  }}</routerLink>
       </div>
-      <router-link to="/base/knowledge" class="subtitle">资料分析速算技巧</router-link>
-      <router-link to="/base/knowledge" class="subtitle">常识判断秒杀技巧</router-link>
-      <router-link to="/base/knowledge" class="subtitle">2023年省联考时事政治热点汇总！</router-link>
-      <router-link to="/base/knowledge" class="subtitle">悄悄告诉你一个蒙题技巧</router-link>
-      <router-link to="/base/knowledge" class="subtitle">逻辑判断中”材料题“-组合排列问题如何解？</router-link>
+      <router-link :to="{path:'/base/knowledge',query:{articleId:article.articleId}}" class="subtitle" v-for="article in articleList.slice(1,articleList.length)">{{ article.articleTitle }}</router-link>
 	</div>
 </template>
 
@@ -49,6 +65,7 @@
 	font-size: 27px;
 	font-weight: 500;
 	margin-right: 340px;
+	flex-shrink: 0;
 }
 .arrow{
     color: #A8ACB0;

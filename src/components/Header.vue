@@ -111,7 +111,7 @@ function toHome(){
                         <router-link to="/base/live">直播</router-link>
                     </li>
                     <li>
-                        <router-link to="/base/talk">论坛</router-link>
+                        <router-link to="/base/weibo">论坛</router-link>
                     </li>
                     <li>
                         <router-link to="/base/teacher">师资</router-link>

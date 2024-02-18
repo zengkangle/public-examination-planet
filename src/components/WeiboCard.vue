@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import '//at.alicdn.com/t/c/font_3294066_5m9urj9rq4a.js'
-import {ref, onMounted, onBeforeMount, watch, computed} from "vue";
+import {ref, onMounted, watch} from "vue";
 import EmojiPicker from "vue3-emoji-picker";
 import CommentCard from "@/components/CommentCard.vue";
 import request from "@/utils/request"
@@ -15,50 +15,6 @@ const {weibo} = defineProps(['weibo'])
 
 const userStore = useUserStore()
 const {userId, userAvatarUrl, userName} = storeToRefs(userStore)
-
-
-onBeforeMount(() => {
-    getImageList()
-    getUserMsg()
-})
-
-const userMsg = ref(0)
-function getUserMsg(){
-    request.get(
-        '/user/getUserMsg',
-      {
-        params: {userId:weibo.userId,}
-      }
-    ).then(res => {
-        if (res.code === '200'){
-            userMsg.value = res.data
-        }else {
-            ElMessage({
-                message:'微博用户信息获取失败',
-                type:"error",
-            })
-        }
-    })
-}
-const imageList = ref([])
-function getImageList(){
-    request.get(
-      '/weibo/selectImageList',
-      {
-          params: {weiboId:weibo.weiboId,}
-      }
-    ).then(res => {
-        if (res.code === '200'){
-            imageList.value = res.data
-        }else {
-            ElMessage({
-                message:'微博用户信息获取失败',
-                type:"error",
-            })
-        }
-    })
-}
-
 
 /**
  * 表情
@@ -156,12 +112,12 @@ emitter.on('update-comment-list',() => {
 <template>
     <div class="card-box">
         <div class="card-header">
-            <el-avatar :src="userMsg.userAvatarUrl" :size="55"/>
+            <el-avatar :src="weibo.userAvatarUrl" :size="55"/>
             <div class="card-header-info">
                 <div class="user">
-                    <div class="name">{{ userMsg.userName }}</div>
+                    <div class="name">{{ weibo.userName }}</div>
                     <svg class="icon vip-icon" aria-hidden="true">
-                        <use xlink:href="#icon-vip" v-show="userMsg.userLevel==='vip'"></use>
+                        <use xlink:href="#icon-vip" v-show="weibo.userLevel==='vip'"></use>
                     </svg>
                 </div>
                 <div class="post-time">{{ dayjs(weibo.weiboPostTime).format('YYYY.MM.DD HH:mm')}}</div>
@@ -172,14 +128,14 @@ emitter.on('update-comment-list',() => {
             <div class="image-list">
                 <el-image
                   style="width: 130px; height: 130px; border-radius: 8px; margin-right: 6px;"
-                  v-for="(img ,index) in imageList"
+                  v-for="(img ,index) in weibo.weiboImgList"
                   :key="index"
                   :src="img"
                   :zoom-rate="1.2"
                   :max-scale="7"
                   :min-scale="0.2"
-                  :preview-src-list="imageList"
-                  :initial-index="imageList.indexOf(img)"
+                  :preview-src-list="weibo.weiboImgList"
+                  :initial-index="weibo.weiboImgList.indexOf(img)"
                   fit="cover"
                 />
             </div>
@@ -236,7 +192,7 @@ emitter.on('update-comment-list',() => {
             <div class="divider2"></div>
             <div class="comment-box-container">
                 <el-scrollbar  max-height="300px" style="width: 620px">
-                    <comment-card v-for="comment in commentList" :key="comment.weiboCommentId" :comment="comment"/>
+                    <CommentCard v-for="comment in commentList" :key="comment.weiboCommentId" :comment="comment"/>
                 </el-scrollbar>
             </div>
         </div>

@@ -3,7 +3,6 @@ import Home from '@/views/Home.vue'
 import Base from "@/views/Base.vue";
 import Course from "@/views/Course.vue";
 import Live from "@/views/Live.vue";
-import Talk from "@/views/Talk.vue";
 import Teacher from "@/views/Teacher.vue";
 import Starter from "@/views/Starter.vue";
 import Login from "@/views/starter/Login.vue";
@@ -33,6 +32,7 @@ import UserInformationOfManage from "@/views/manage/UserInformationOfManage.vue"
 import UserOfAdminManage from "@/views/manage/UserOfAdminManage.vue";
 import MyCourseOfManage from "@/views/manage/MyCourseOfManage.vue";
 import MyOrderOfManage from "@/views/manage/MyOrderOfManage.vue";
+import Weibo from "@/views/Weibo.vue";
 
 
 const router = createRouter({
@@ -104,8 +104,8 @@ const router = createRouter({
           component: Live,
         },
         {
-          path: 'talk',
-          component: Talk,
+          path: 'weibo',
+          component: Weibo,
         },
         {
           path: 'teacher',
@@ -184,7 +184,10 @@ const router = createRouter({
         },
         {
           path: 'knowledge',
-          component: Knowledge
+          component: Knowledge,
+          props(route){
+            return route.query
+          }
         },
       ]
     },

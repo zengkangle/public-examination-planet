@@ -50,6 +50,7 @@ const sendMsg = ref({
     msgContent:'',
 })
 function send() {
+    ws.send(JSON.stringify(sendMsg.value))
     ElNotification({
         message: '发送成功！',
         type: 'success',
@@ -197,7 +198,9 @@ function onSelectEmoji(emoji) {
     padding-top: 50px;
     padding-left: 250px;
     display: flex;
-    background-image: url("../assets/bg.png");
+    background-image: url("../assets/bg5.jpg");
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
     height: 94.5vh;
 }
 
@@ -207,10 +210,13 @@ function onSelectEmoji(emoji) {
 }
 
 .container-header {
+    width: 1034px;
     background-color: #545E81;
     border-radius: 8px 8px 0 0;
     display: flex;
     padding: 15px 10px;
+    background-image: url("../assets/bg4.jpg");
+    background-size: 100%;
 }
 
 .container-header-info {
@@ -228,15 +234,14 @@ function onSelectEmoji(emoji) {
 }
 
 .player-container {
-    height: 0;
     width: 100%;
     padding-bottom: 56.25%;
     position: relative;
 }
 
 .player {
-    width: 100%;
-    height: 100%;
+    width: 1054px;
+    height: 593px;
     position: absolute;
     background-color: black;
 }
@@ -245,6 +250,8 @@ function onSelectEmoji(emoji) {
     height: 50px;
     background-color: #545E81;
     border-radius: 0 0 8px 8px;
+    background-image: url("../assets/bg4.jpg");
+    background-size: 100%;
 }
 
 .chat-area {
@@ -257,6 +264,8 @@ function onSelectEmoji(emoji) {
     padding: 10px 10px;
     border-radius: 8px 8px 0 0;
     color: #fff;
+    background-image: url("../assets/bg4.jpg");
+    background-size: 100%;
 }
 
 .chat-container {
@@ -291,6 +300,8 @@ function onSelectEmoji(emoji) {
     border-radius: 0 0 8px 8px;
     padding: 10px;
     position: relative;
+    background-image: url("../assets/bg4.jpg");
+    background-size: 100%;
 }
 .emoji-switch{
     width: 15px;
