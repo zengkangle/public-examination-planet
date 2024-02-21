@@ -66,7 +66,7 @@ function submitEdit(){
  * @param uploadFile
  */
 const handleAvatarSuccess: UploadProps['onSuccess'] = (response, uploadFile) => {
-    tableScope.value.userAvatarUrl = response.data
+    tableScope.value.teacherImgUrl = response.data
 }
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
     if (rawFile.type !== 'image/jpeg') {
@@ -162,7 +162,7 @@ function getTeacherListScroll(){
                 <el-form-item label="教师封面">
                     <el-upload
                       class="avatar-uploader"
-                      action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+                      action="http://localhost:8009/files/imageUpload"
                       :show-file-list="false"
                       :on-success="handleAvatarSuccess"
                       :before-upload="beforeAvatarUpload"

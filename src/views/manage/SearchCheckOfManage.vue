@@ -4,6 +4,11 @@ import {computed, ref} from "vue";
 import request from "@/utils/request";
 import {UploadFilled} from "@element-plus/icons-vue";
 import {ElMessage, ElNotification} from "element-plus";
+import {useUserStore} from "@/store/user";
+import {storeToRefs} from "pinia";
+
+const userStore = useUserStore()
+const {teacherId} = storeToRefs(userStore)
 
 function formatterTime(row){
     return dayjs(row.createTime).format('YYYY.MM.DD HH:mm')
@@ -16,6 +21,7 @@ const pageMsg = ref({
     currentPage:0,
     pageSize:10,
     total:null,
+    teacherId:teacherId.value
 })
 let disabled = computed(() => {
     return videoList.value.length == pageMsg.value.total;
@@ -103,7 +109,13 @@ function submitReUpload(){
                 </template>
             </el-table-column>
             <el-table-column prop="coursePage" label="所属课程节数"/>
-            <el-table-column prop="videoStatus" label="视频状态"/>
+            <el-table-column prop="videoStatus" label="视频状态">
+                <template #default="scope">
+                    <el-tag v-if="scope.row.videoStatus === '通过'" type="success">通过</el-tag>
+                    <el-tag v-else-if="scope.row.videoStatus === '不通过'" type="danger">不通过</el-tag>
+                    <el-tag v-else type="warning">审核中</el-tag>
+                </template>
+            </el-table-column>
             <el-table-column prop="createTime" label="创建时间" :formatter="formatterTime"/>
             <el-table-column label="操作">
                 <template #default="scope">

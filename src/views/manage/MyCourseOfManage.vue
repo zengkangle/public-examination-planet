@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import {ref,computed} from "vue";
-import {Plus, UploadFilled} from '@element-plus/icons-vue'
+import {UploadFilled} from '@element-plus/icons-vue'
 import request from "@/utils/request";
 import * as dayjs from 'dayjs'
 import {ElMessage, ElNotification} from "element-plus";
+import {useUserStore} from "@/store/user";
+import {storeToRefs} from "pinia";
+
+const userStore = useUserStore()
+const {teacherId} = storeToRefs(userStore)
 
 const tags = ref(['考前点睛冲刺','历年真题讲解','一关攻克一考点','查漏补缺重点强化','热点及时掌握'])
 
@@ -68,14 +73,15 @@ const statusText = {
 }
 const dialogUploadVisible = ref(false)
 const uploadVideo = ref({})
+let uploadRef = ref(null)
 function upload(scope) {
+    uploadVideo.value.coursePage = scope.row.coursePage
     uploadVideo.value.coursePageAmount = scope.row.coursePageAmount
     uploadVideo.value.courseId = scope.row.courseId
     dialogUploadVisible.value = true
 }
 function onFileSuccess(rootFile, file, response) {
     let res = JSON.parse(response);
-    console.log(res)
     uploadVideo.value.videoUrl = res.data
 }
 function submitUpload(){
@@ -85,6 +91,7 @@ function submitUpload(){
     ).then(res => {
         if (res.code == '200'){
             dialogUploadVisible.value = false
+            uploadRef.value.resetFields()
             ElNotification({
                 message: '课程视频上传成功！',
                 type: 'success',
@@ -108,6 +115,7 @@ const pageMsg = ref({
     currentPage:0,
     pageSize:10,
     total:null,
+    teacherId:teacherId.value
 })
 let disabled = computed(() => {
     return courseList.value.length == pageMsg.value.total;
@@ -209,18 +217,18 @@ function getUserListScroll(){
             </el-form>
         </el-dialog>
 
-        <el-dialog v-model="dialogUploadVisible" title="视频上传">
-            <el-form :model="uploadVideo" label-width="110px">
+        <el-dialog v-model="dialogUploadVisible" title="视频上传" :destroy-on-close="true">
+            <el-form :model="uploadVideo" label-width="110px" ref="uploadRef">
                 <el-form-item label="视频标题" prop="videoTitle">
                     <el-input v-model="uploadVideo.videoTitle" autocomplete="off"/>
                 </el-form-item>
                 <el-form-item label="请选择课程节数" prop="coursePage">
                     <el-select v-model="uploadVideo.coursePage" placeholder="请选择课程节数">
                         <el-option label="新增课程视频" :value="uploadVideo.coursePageAmount+1"/>
-                        <el-option :label="'第'+count+'节课'" v-for="count in uploadVideo.coursePageAmount" value="count"/>
+                        <el-option :label="'第'+count+'节课'" v-for="count in uploadVideo.coursePageAmount" :value="count"/>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="选择视频"  >
+                <el-form-item label="选择视频">
                     <uploader
                       :options="options"
                       :file-status-text="statusText"

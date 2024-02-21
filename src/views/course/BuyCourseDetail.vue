@@ -9,7 +9,7 @@ import StudentRate from "@/components/StudentRate.vue";
 
 const userStore = useUserStore()
 const {userId} = storeToRefs(userStore)
-const {courseId,coursePrice,courseTitle} = defineProps(['courseId','courseTitle','courseOutline','tags','userAvatarUrl','userName','coursePrice','courseOrder','teacherDescribe','teacherRateCount','teacherRate'])
+const {courseId,coursePrice,courseTitle,teacherRate} = defineProps(['courseId','courseTitle','courseOutline','tags','userAvatarUrl','userName','coursePrice','courseOrder','teacherDescribe','teacherRateCount','teacherRate'])
 
 const videoList = ref([])
 function initVideoList(){
@@ -28,7 +28,9 @@ onBeforeMount(() => {
   initVideoList()
 })
 
-
+/**
+ * 购买课程
+ */
 const order = ref({
   userId:userId.value,
   orderType:"course",
@@ -114,12 +116,12 @@ function getUserListScroll(){
       </div>
       <div class="course-list">
           <div class="course-list-title">课程表</div>
+          <div v-if="videoList.length === 0" style="width: 100%;text-align: center;">暂无课程内容~</div>
           <div class="course-video">
               <div class="course-video-head" v-for="video in videoList" :key="video.videoId">
                   <el-divider direction="vertical" class="divider2"></el-divider>
                   <div class="video-title">{{ video.videoTitle }}</div>
               </div>
-              <el-divider class="divider3"></el-divider>
           </div>
           <el-divider class="divider4"></el-divider>
       </div>
@@ -131,6 +133,7 @@ function getUserListScroll(){
     <div class="teacher-comment">
       <div class="teacher-comment-title">学生评价</div>
       <StudentRate v-for="comment in commentList" :key="comment.commentId" :comment="comment" style="background-color: #fff"/>
+      <div v-if="commentList.length === 0" style="width: 100%;text-align: center;">暂无学生评价~</div>
     </div>
   </div>
 </template>

@@ -1,5 +1,11 @@
 <script setup lang="ts">
 import {useRouter} from "vue-router";
+import {useUserStore} from "@/store/user";
+import {storeToRefs} from "pinia";
+
+const userStore = useUserStore()
+const {userId} = storeToRefs(userStore)
+
 const router = useRouter()
 function redirectToBuy(){
 	router.push('/base/course/buyCourse/writtenTestOfBuy')
@@ -13,7 +19,7 @@ function redirectToMine(){
 	<div class="content">
 		<div class="nav">
 				<router-link to="/base/course/buyCourse" class="nav-title" active-class="nav-title-active" @click="redirectToBuy">购买课程</router-link>
-				<router-link to="/base/course/myCourse" class="nav-title" active-class="nav-title-active" @click="redirectToMine">我的课程</router-link>
+				<router-link v-if="userId != null" to="/base/course/myCourse" class="nav-title" active-class="nav-title-active" @click="redirectToMine">我的课程</router-link>
 		</div>
 		<router-view></router-view>
 	</div>

@@ -149,7 +149,7 @@ emitter.on('update-comment-list',() => {
         <div class="comment-box" v-if="showCommentBox">
             <div class="divider"></div>
             <div class="comment-box-header">
-                <el-avatar :src="userAvatarUrl!" :size="40"/>
+                <el-avatar :src="userAvatarUrl ? userAvatarUrl:'http://localhost:8009/files/imageDownload/21dfe35569fc47c38f9d283a15c2ffcb.png'" :size="40"/>
                 <div class="comment-box-header-send">
                     <el-input
                       v-model="commentMsg.weiboCommentContent"

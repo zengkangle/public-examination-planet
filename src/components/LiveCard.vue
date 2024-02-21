@@ -122,6 +122,7 @@ defineProps(['live'])
 }
 .card-footer{
 	display: flex;
+	position: relative;
 }
 .teacher{
 	display: flex;
@@ -134,15 +135,15 @@ margin-left: 10px;
 .condition-vip{
 	color: red;
 	font-weight: 600;
-	position: relative;
-	left: 210px;
+	position: absolute;
+	left: 280px;
 	top: 20px;
 }
 .condition-free{
     color: #4C7CFE;
     font-weight: 600;
-    position: relative;
-    left: 210px;
+    position: absolute;
+    left: 260px;
     top: 20px;
 }
 </style>

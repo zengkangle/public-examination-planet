@@ -12,23 +12,8 @@ import useGetUserToStore from "@/hooks/useGetUserToStore"; // 导入插件
 
 
 const userStore = useUserStore()
-const {userId,userName,userGender,userPhone,userAvatarUrl,userEmail,userLevel,userCreateTime,teacherId} = storeToRefs(userStore)
-const userInfoForm = ref({
-    userId:userId.value,
-    userAvatarUrl: userAvatarUrl.value,
-    userName: userName.value,
-    userGender: userGender.value,
-    userPhone: userPhone.value,
-    userEmail: userEmail.value,
-    userLevel: userLevel.value,
-    userCreateTime: userCreateTime.value,
-    teacherId: teacherId.value,
-    teacherOutline:null,
-    teacherDescribe:null,
-    teacherRate:null,
-    teacherImgUrl:null,
-    tags: [],
-})
+const {userId} = storeToRefs(userStore)
+const plusUserInfoForm = ref({})
 
 /**
  * 初始化个人信息
@@ -36,43 +21,34 @@ const userInfoForm = ref({
 const tags = ref(['言语优质讲师','面试主讲','公考申论主讲','数资大神','授课逻辑缜密','思路清晰'])
 let comeDays = computed(() => {
     dayjs.extend(duration)
-    return dayjs.duration(dayjs().diff(dayjs(userInfoForm.value.userCreateTime))).days()
+    return dayjs.duration(dayjs().diff(dayjs(plusUserInfoForm.value.userCreateTime))).days()
 })
-function getTeacherInfo(){
-    console.log(teacherId.value)
+let userLevelFormatter = computed(() => {
+    if (plusUserInfoForm.value.userLevel === 'normal'){
+        return '普通用户'
+    } else if (plusUserInfoForm.value.userLevel === 'vip'){
+        return 'vip用户'
+    } else if (plusUserInfoForm.value.userLevel === 'teacher'){
+        return '教师'
+    } else {
+        return '管理员'
+    }
+})
+function getPlusUserInfo(){
     request.get(
-      "/teacher/getTeacherById",
+        '/user/getPlusUserMsg',
       {
-          params: {teacherId: teacherId.value}
+        params:{userId: userId.value}
       }
     ).then(res => {
         if (res.code === '200'){
-            userInfoForm.value.teacherOutline = res.data.teacherOutline
-            userInfoForm.value.teacherDescribe = res.data.teacherDescribe
-            userInfoForm.value.teacherRate = res.data.teacherRate
-            userInfoForm.value.teacherImgUrl = res.data.teacherImgUrl
-        }
-    })
-}
-function getTags(){
-    request.get(
-      "/tag/getTagsById",
-      {
-          params: {teacherId: teacherId.value}
-      }
-    ).then(res => {
-        if (res.code === '200'){
-            console.log(res.data)
-            userInfoForm.value.tags = res.data
+            plusUserInfoForm.value = res.data
         }
     })
 }
 
 onBeforeMount(() => {
-    if (userLevel.value == 'teacher'){
-        getTeacherInfo()
-        getTags()
-    }
+    getPlusUserInfo()
 })
 
 
@@ -82,7 +58,7 @@ onBeforeMount(() => {
 function submitEdit() {
     request.post(
         '/user/updateUserInfoPlus',
-        userInfoForm.value,
+      plusUserInfoForm.value,
     ).then(res => {
         if (res.code == '200'){
             ElNotification({
@@ -105,8 +81,7 @@ function submitEdit() {
                     getUserMsg()
                 }
             }).then(() => {
-                  getTags()
-                  getTeacherInfo()
+                getPlusUserInfo()
             })
         }
     })
@@ -118,10 +93,10 @@ function submitEdit() {
  * @param uploadFile
  */
 const handleAvatarSuccess: UploadProps['onSuccess'] = (response, uploadFile) => {
-    userInfoForm.value.userAvatarUrl = response.data
+    plusUserInfoForm.value.userAvatarUrl = response.data
 }
 const handleAvatarSuccess2: UploadProps['onSuccess'] = (response, uploadFile) => {
-    userInfoForm.value.teacherImgUrl = response.data
+    plusUserInfoForm.value.teacherImgUrl = response.data
 }
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
     if (rawFile.type !== 'image/jpeg') {
@@ -134,7 +109,33 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
     return true
 }
 
-
+/**
+ * 升级vip
+ */
+const order = ref({
+    userId:userId.value,
+    orderType:"vip",
+    orderName:"公考星球VIP",
+    orderPrice:99.0,
+})
+function buy(){
+    request.post(
+      '/order/createOrder',
+      order.value
+    ).then(res => {
+        if (res.code == '200'){
+            if (res.data.orderStatus == '已支付'){
+                ElMessage({
+                    message: '你已经是尊贵的VIP用户，无需购买，请重新登录！',
+                    type:'warning',
+                    showClose: true,
+                })
+            }else {
+                window.open("http://localhost:8009/alipay/pay?orderId="+res.data.orderId);
+            }
+        }
+    })
+}
 </script>
 
 <template>
@@ -143,7 +144,7 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
         <el-divider class="divider"/>
         <el-form
           ref="form"
-          :model="userInfoForm"
+          :model="plusUserInfoForm"
           label-width="auto"
           label-position="right"
           size="large"
@@ -156,38 +157,38 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
                   :on-success="handleAvatarSuccess"
                   :before-upload="beforeAvatarUpload"
                 >
-                    <img v-if="userInfoForm.userAvatarUrl" :src="userInfoForm.userAvatarUrl" class="avatar" />
+                    <img v-if="plusUserInfoForm.userAvatarUrl" :src="plusUserInfoForm.userAvatarUrl" class="avatar" />
                     <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
                 </el-upload>
             </el-form-item>
             <el-form-item label="用户名称">
-                <el-input v-model="userInfoForm.userName" />
+                <el-input v-model="plusUserInfoForm.userName" />
             </el-form-item>
             <el-form-item label="性别">
-                <el-radio-group v-model="userInfoForm.userGender">
+                <el-radio-group v-model="plusUserInfoForm.userGender">
                     <el-radio border :label="1">男</el-radio>
                     <el-radio border :label="0">女</el-radio>
                 </el-radio-group>
             </el-form-item>
             <el-form-item label="手机号">
-                <el-input v-model="userInfoForm.userPhone" />
+                <el-input v-model="plusUserInfoForm.userPhone" />
             </el-form-item>
             <el-form-item label="邮箱">
-                <el-input v-model="userInfoForm.userEmail" />
+                <el-input v-model="plusUserInfoForm.userEmail" />
             </el-form-item>
             <el-form-item label="用户等级">
                 <div style="display: flex;">
-                    <div>普通用户</div>
-                    <el-button style="margin-left: 10px;" v-if="userInfoForm.userLevel == 'normal'">升级为vip</el-button>
+                    <div>{{ userLevelFormatter }}</div>
+                    <el-button style="margin-left: 10px;" v-if="plusUserInfoForm.userLevel === 'normal'" @click="buy">升级为vip</el-button>
                 </div>
             </el-form-item>
-            <el-form-item label="教师概述" v-if="userLevel=='teacher'">
-                <el-input v-model="userInfoForm.teacherOutline" />
+            <el-form-item label="教师概述" v-if="plusUserInfoForm.userLevel=='teacher'">
+                <el-input v-model="plusUserInfoForm.teacherOutline" />
             </el-form-item>
-            <el-form-item label="教师详细介绍" v-if="userLevel=='teacher'">
-                <el-input v-model="userInfoForm.teacherDescribe" />
+            <el-form-item label="教师详细介绍" v-if="plusUserInfoForm.userLevel=='teacher'">
+                <el-input v-model="plusUserInfoForm.teacherDescribe" />
             </el-form-item>
-            <el-form-item label="教师封面" v-if="userLevel=='teacher'">
+            <el-form-item label="教师封面" v-if="plusUserInfoForm.userLevel=='teacher'">
                 <el-upload
                   class="avatar-uploader"
                   action="http://localhost:8009/files/imageUpload"
@@ -195,23 +196,23 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
                   :on-success="handleAvatarSuccess2"
                   :before-upload="beforeAvatarUpload"
                 >
-                    <img v-if="userInfoForm.teacherImgUrl" :src="userInfoForm.teacherImgUrl" class="avatar" />
+                    <img v-if="plusUserInfoForm.teacherImgUrl" :src="plusUserInfoForm.teacherImgUrl" class="avatar" />
                     <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
                 </el-upload>
             </el-form-item>
-            <el-form-item label="学生评分" v-if="userLevel=='teacher'">
+            <el-form-item label="学生评分" v-if="plusUserInfoForm.userLevel=='teacher'">
                 <el-rate
-                  v-if="userInfoForm.teacherRate != 0"
-                  v-model="userInfoForm.teacherRate"
+                  v-if="plusUserInfoForm.teacherRate != 0"
+                  v-model="plusUserInfoForm.teacherRate"
                   disabled
                   show-score
                   text-color="#ff9900"
                   score-template="{value}"
                 />
-                <div v-if="userInfoForm.teacherRate == 0">暂无评价</div>
+                <div v-if="plusUserInfoForm.teacherRate == 0">暂无评价</div>
             </el-form-item>
-            <el-form-item label="教师标签" v-if="userLevel=='teacher'">
-                <el-checkbox-group v-model="userInfoForm.tags" size="large" :max="2">
+            <el-form-item label="教师标签" v-if="plusUserInfoForm.userLevel=='teacher'">
+                <el-checkbox-group v-model="plusUserInfoForm.tags" size="large" :max="2">
                     <el-checkbox v-for="tag in tags" :key="tag" :label="tag" border />
                 </el-checkbox-group>
             </el-form-item>

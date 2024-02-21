@@ -27,12 +27,13 @@ const options = {
  */
 const tableScope = ref({})
 
-function checkVideo(){
+function checkVideo(scope,val){
     request.post(
         '/video/updateVideoStatus',
         tableScope.value
     ).then(res => {
         if (res.code == '200'){
+            scope.row.videoStatus = val
             ElNotification({
                 message: '操作成功！',
                 type: 'success',
@@ -51,12 +52,12 @@ function checkVideo(){
 function pass(scope){
     tableScope.value.videoId = scope.row.videoId
     tableScope.value.videoStatus = '通过'
-    checkVideo()
+    checkVideo(scope,'通过')
 }
 function unPass(scope){
     tableScope.value.videoId = scope.row.videoId
     tableScope.value.videoStatus = '不通过'
-    checkVideo()
+    checkVideo(scope,'不通过')
 }
 
 /**
@@ -107,26 +108,32 @@ function getUserListScroll(){
                 </template>
             </el-table-column>
             <el-table-column prop="coursePage" label="所属课程节数"/>
-            <el-table-column prop="videoStatus" label="视频状态"/>
+            <el-table-column prop="videoStatus" label="视频状态">
+                <template #default="scope">
+                    <el-tag v-if="scope.row.videoStatus === '通过'" type="success">通过</el-tag>
+                    <el-tag v-else-if="scope.row.videoStatus === '不通过'" type="danger">不通过</el-tag>
+                    <el-tag v-else type="warning">审核中</el-tag>
+                </template>
+            </el-table-column>
             <el-table-column prop="createTime" label="创建时间" :formatter="formatterTime"/>
             <el-table-column label="操作">
                 <template #default="scope">
                     <el-button type="primary" size="small" @click="view(scope)" >查看</el-button>
                     <el-popconfirm v-if="scope.row.videoStatus == '审核中'" title="确定要将此视频审核通过吗?" confirm-button-text="确定" cancel-button-text="取消" @confirm="pass(scope)">
                         <template #reference>
-                            <el-button type="primary" size="small">通过</el-button>
+                            <el-button type="success" size="small">通过</el-button>
                         </template>
                     </el-popconfirm>
                     <el-popconfirm v-if="scope.row.videoStatus == '审核中'" title="确定要将此视频审核不通过吗?" confirm-button-text="确定" cancel-button-text="取消" @confirm="unPass(scope)">
                         <template #reference>
-                            <el-button type="primary" size="small">不通过</el-button>
+                            <el-button type="danger" size="small">不通过</el-button>
                         </template>
                     </el-popconfirm>
                 </template>
             </el-table-column>
         </el-table>
 
-        <el-dialog v-model="dialogViewVisible" title="审核视频">
+        <el-dialog v-model="dialogViewVisible" title="审核视频" :destroy-on-close="true">
             <div class="player-container">
                 <w-player class="player" :options="options" :danmakuKey="2"></w-player>
             </div>

@@ -60,11 +60,13 @@ async function go(){
 
 <template>
 <div class="card-box" @click="go">
-		<div class="title">{{ course.courseTitle }}</div>
-		<div class="subtitle">{{ course.courseOutline }}</div>
-		<div class="tags">
-        <el-tag class="tag" v-for="tag in course.tags">{{ tag }}</el-tag>
-		</div>
+		<div class="header">
+        <div class="title">{{ course.courseTitle }}</div>
+        <div class="subtitle">{{ course.courseOutline }}</div>
+        <div class="tags">
+            <el-tag class="tag" v-for="tag in course.tags">{{ tag }}</el-tag>
+        </div>
+    </div>
 		<div class="mid">
 			<div class="teacher">
           <el-avatar :src="course.userAvatarUrl"/>
@@ -96,7 +98,7 @@ async function go(){
 }
 .card-box{
 	width: 365px;
-	height: 280px;
+	height: 260px;
 	background-color: #fff;
 	padding: 15px;
 	border-radius: 6px;
@@ -106,6 +108,9 @@ async function go(){
 .card-box:hover{
 	box-shadow: 3px 3px 15px rgba(0,0,0,.3);
 	margin-top: -3px;
+}
+.header{
+	height: 130px;
 }
 .title{
 	font-size: 18px;
@@ -124,8 +129,9 @@ async function go(){
 	margin-right: 20px;
 }
 .mid{
-	margin-top: 20px;
+	//margin-top: 20px;
 	display: flex;
+	position: relative;
 }
 .name{
 	color: #8B9095;
@@ -135,16 +141,14 @@ async function go(){
 }
 .money{
 	display: flex;
-	position: relative;
-	left: 270px;
+	position: absolute;
+	left: 300px;
 	top: 50px;
 	color: #F46E0B;
 }
 .order-num{
 	color: #BABDC0;
 	font-size: 14px;
-	position: relative;
-	left: 290px;
-	top: 15px;
+	text-align: right;
 }
 </style>

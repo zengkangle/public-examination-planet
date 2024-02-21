@@ -94,6 +94,7 @@ function getUserListScroll(){
             <div class="title">学生评价</div>
           </div>
           <StudentRate v-for="comment in commentList" :key="comment.commentId" :comment="comment"/>
+          <div v-if="commentList.length === 0" style="width: 100%;text-align: center;font-size: 25px;margin-top: 20px;">暂无学生对此教师进行评价~</div>
         </div>
     </div>
 	</div>

@@ -1,68 +1,29 @@
 <script setup lang="ts">
 import ReplyDialog from "@/components/ReplyDialog.vue";
 import {ref} from "vue";
-import {onBeforeMount} from "vue";
 import * as dayjs from 'dayjs'
-import request from "@/utils/request";
-
 
 const {reply} = defineProps(['reply'])
 
 let replyDialogVisible = ref(false)
-
-const userMsg = ref({})
-function getUserMsg(){
-    request.get(
-      '/user/getUserMsg',
-      {
-          params: {userId:reply.userId,}
-      }
-    ).then(res => {
-        if (res.code === '200'){
-            userMsg.value = res.data
-        }
-    })
-}
-onBeforeMount(() => {
-    getUserMsg()
-})
-
-const targetUserMsg = ref({})
-function getTargetUserMsg(){
-    request.get(
-      '/user/getUserMsg',
-      {
-          params: {userId:reply.weiboCommentReplyTargetId,}
-      }
-    ).then(res => {
-        if (res.code === '200'){
-            targetUserMsg.value = res.data
-        }
-    })
-}
-onBeforeMount(() => {
-    if (reply.weiboCommentReplyTargetId != null){
-        getTargetUserMsg()
-    }
-})
 
 </script>
 
 <template>
     <div class="sub-reply-box">
         <div class="sub-reply-card-content">
-            <span class="sub-reply-card-content-name">{{ userMsg.userName }}</span>
-            <svg class="icon sub-reply-vip-icon" aria-hidden="true" v-if="userMsg.userLevel === 'vip'"><use xlink:href="#icon-vip"></use></svg>
+            <span class="sub-reply-card-content-name">{{ reply.userName }}</span>
+            <svg class="icon sub-reply-vip-icon" aria-hidden="true" v-if="reply.userLevel === 'vip'"><use xlink:href="#icon-vip"></use></svg>
             <span v-if="reply.weiboCommentReplyTargetId === null">：{{reply.weiboCommentReplyContent}}</span>
-            <span v-if="reply.weiboCommentReplyTargetId != null">：<span style="color: #4C7CFE;cursor: pointer;">@{{targetUserMsg.userName}}</span>{{reply.weiboCommentReplyContent}}</span>
+            <span v-if="reply.weiboCommentReplyTargetId != null">：<span style="color: #4C7CFE;cursor: pointer;">@{{reply.targetUserName}}</span>{{reply.weiboCommentReplyContent}}</span>
         </div>
         <div class="sub-reply-card-footer">
             <div class="sub-reply-time">{{ dayjs(reply.weiboCommentReplyTime).format('YYYY.MM.DD HH:mm') }}</div>
             <i class="iconfont sub-reply-icon" @click="replyDialogVisible = true">&#xe646;</i>
         </div>
     </div>
-    <el-dialog v-model="replyDialogVisible" :title="'回复@'+userMsg.userName" align-center class="reply-dialog" width="540px" style="--el-dialog-padding-primary:20px">
-        <ReplyDialog :isReply="true" :weiboCommentId="reply.weiboCommentId" :weiboCommentReplyTargetId="userMsg.userId" @close-dialog="replyDialogVisible = false"/>
+    <el-dialog v-model="replyDialogVisible" :title="'回复@'+reply.userName" align-center class="reply-dialog" width="540px" style="--el-dialog-padding-primary:20px">
+        <ReplyDialog :isReply="true" :weiboCommentId="reply.weiboCommentId" :weiboCommentReplyTargetId="reply.userId" @close-dialog="replyDialogVisible = false"/>
     </el-dialog>
 </template>
 

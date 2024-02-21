@@ -1,6 +1,8 @@
 <script setup lang="ts">
 
-defineProps(['userName','userAvatarUrl','teacherDescribe','teacherRateCount','teacherRate'])
+const {teacherRate} = defineProps(['userName','userAvatarUrl','teacherDescribe','teacherRateCount','teacherRate'])
+let teacherRateShow = parseFloat(teacherRate)
+
 </script>
 
 <template>
@@ -9,8 +11,8 @@ defineProps(['userName','userAvatarUrl','teacherDescribe','teacherRateCount','te
         <el-avatar :size="55" :src="userAvatarUrl"/>
         <div class="teacher-right">
           <div class="name">{{ userName }}</div>
-          <el-rate :value="teacherRate" size="large" allow-half disabled class="rate" v-if="teacherRateCount != 0"/>
-          <div style="font-size: 14px; margin-top: 10px;">暂无学生评价</div>
+          <el-rate v-model="teacherRateShow" size="large" allow-half disabled class="rate" v-if="teacherRateCount != 0"/>
+          <div v-if="teacherRateCount === 0" style="font-size: 14px; margin-top: 10px;">暂无学生评价</div>
         </div>
 		</div>
 		<div class="teacher-introduce-detail">{{ teacherDescribe }}</div>

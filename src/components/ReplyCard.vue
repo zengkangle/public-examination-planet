@@ -7,7 +7,7 @@ import SubReply from "@/components/SubReply.vue";
 import emitter from "@/utils/emitter";
 
 
-const {comment} = defineProps(['comment','userMsg'])
+const {comment} = defineProps(['comment'])
 const load = () => {
 }
 let replyDialogVisible = ref(false)

@@ -80,7 +80,7 @@ const {teacher} = defineProps(['teacher'])
     border-bottom: 1px solid rgba(255,255,255,0.3);
     font-size: 20px;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     padding-bottom: 20px;
 }
 
