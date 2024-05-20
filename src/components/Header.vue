@@ -29,7 +29,7 @@ function findInit(getStr?) {
 		case 'live':
 			initSpace.value = 'init3'
 			break
-		case 'talk':
+		case 'weibo':
 			initSpace.value = 'init4'
 			break
 		case 'teacher':

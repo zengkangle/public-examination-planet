@@ -320,8 +320,8 @@ function submitTeacherComment(){
 <style scoped>
 .main{
 	width: 1500px;
+	margin: 0 auto;
 	padding: 80px 25px 0 25px;
-	margin-left: 200px;
 	background-color: #fff;
 	display: flex;
 }

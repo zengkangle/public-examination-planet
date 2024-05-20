@@ -196,7 +196,7 @@ function onSelectEmoji(emoji) {
 <style scoped>
 .live-room {
     padding-top: 50px;
-    padding-left: 250px;
+    justify-content: center;
     display: flex;
     background-image: url("../assets/bg5.jpg");
     background-size: 100% 100%;
@@ -207,6 +207,7 @@ function onSelectEmoji(emoji) {
 .container {
     width: 1054px;
     margin-top: 30px;
+    //margin: 0 auto;
 }
 
 .container-header {

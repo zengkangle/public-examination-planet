@@ -3,7 +3,7 @@ import {ref} from "vue";
 import "@/assets/icon/iconfont.js"
 import KnowledgeNavgation from "@/components/KnowledgeNavgation.vue";
 
-let imgList = ref([{id:'1',url:'https://nodestatic.fbstatic.cn/pan/downloads/b7c1e78d7559c7851ea9e2e7949373b6.png'},{id:'2',url:'https://nodestatic.fbstatic.cn/pan/downloads/25a8da9f5d6c189063b4e6934c32f121.png'}])
+let imgList = ref([{id:'1',url:'http://localhost:8009/files/imageDownload/7e07c2eba64f46ce967e5ca0beb90f58.png'},{id:'2',url:'http://localhost:8009/files/imageDownload/0c142bf387cd4c12a9fa7920f8814ffe.png'}])
 </script>
 <template>
   <div class="main">

@@ -10,7 +10,7 @@ import request from "@/utils/request";
 const teacherList = ref([])
 const pageMsg = ref({
     currentPage:0,
-    pageSize:10,
+    pageSize:12,
     total:null,
 })
 let disabled = computed(() => {

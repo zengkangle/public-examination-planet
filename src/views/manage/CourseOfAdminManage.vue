@@ -60,6 +60,7 @@ const pageMsg = ref({
     currentPage:0,
     pageSize:10,
     total:null,
+    courseType:'all',
 })
 let disabled = computed(() => {
     return courseList.value.length == pageMsg.value.total;

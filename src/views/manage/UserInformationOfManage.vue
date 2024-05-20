@@ -6,7 +6,6 @@ import { Plus } from '@element-plus/icons-vue'
 import {useUserStore} from "@/store/user";
 import {storeToRefs} from "pinia";
 import * as dayjs from 'dayjs'
-import * as duration from 'dayjs/plugin/duration'
 import request from "@/utils/request";
 import useGetUserToStore from "@/hooks/useGetUserToStore"; // 导入插件
 
@@ -20,8 +19,7 @@ const plusUserInfoForm = ref({})
  */
 const tags = ref(['言语优质讲师','面试主讲','公考申论主讲','数资大神','授课逻辑缜密','思路清晰'])
 let comeDays = computed(() => {
-    dayjs.extend(duration)
-    return dayjs.duration(dayjs().diff(dayjs(plusUserInfoForm.value.userCreateTime))).days()
+    return dayjs().diff(dayjs(plusUserInfoForm.value.userCreateTime),'day')
 })
 let userLevelFormatter = computed(() => {
     if (plusUserInfoForm.value.userLevel === 'normal'){
@@ -124,7 +122,7 @@ function buy(){
       order.value
     ).then(res => {
         if (res.code == '200'){
-            if (res.data.orderStatus == '已支付'){
+            if (res.data.orderStatus === '已支付'){
                 ElMessage({
                     message: '你已经是尊贵的VIP用户，无需购买，请重新登录！',
                     type:'warning',

@@ -53,9 +53,8 @@ function post(){
       getWeiboListScroll()
     } else{
       ElMessage({
-        message: res.msg,
+        message: '发布失败！',
         type: "error",
-        showClose: true,
       })
     }
   })

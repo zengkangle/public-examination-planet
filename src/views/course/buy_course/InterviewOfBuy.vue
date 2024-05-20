@@ -10,7 +10,7 @@ import {computed, ref} from "vue";
 const courseList = ref([])
 const pageMsg = ref({
 	currentPage:0,
-	pageSize:10,
+	pageSize:9,
 	total:null,
 	courseType:'公考面试'
 })
